@@ -7,7 +7,7 @@ void main() {
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
+  
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
@@ -31,13 +31,26 @@ class MyApp extends StatelessWidget {
         //
         // This works for code too, not just values: Most code changes can be
         // tested with just a hot reload.
+        
         colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.green,
-          surface: Colors.white,
+          seedColor: Colors.white,
+          surface: Colors.grey[200]!,
+          //onSurface: Colors.black,
+          //secondaryContainer: Colors.white,
+          primaryContainer: Colors.white,
           dynamicSchemeVariant: DynamicSchemeVariant.fidelity,
         ),
+        
       ),
-      home: const MyHomePage(title: 'Bonjour'),
+      darkTheme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.white,
+          surface: Colors.black,
+          onSurface: Colors.white,
+          dynamicSchemeVariant: DynamicSchemeVariant.fidelity,
+        ),),
+      
+      home: const MyHomePage(title: 'TSIN 2026'),
     );
   }
 }
@@ -79,11 +92,17 @@ class _MyHomePageState extends State<MyHomePage> {
         // Here we take the value from the MyHomePage object that was created by
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
+        titleTextStyle: TextStyle(
+          fontFamily: GoogleFonts.googleSansCode().fontFamily,
+          fontSize: 20,
+          fontWeight: FontWeight.w100,
+        ),
       ),
       body: Center(
         // Center is a layout widget. It takes a single child and positions it
         // in the middle of the parent.
         child: SingleChildScrollView(
+          physics: BouncingScrollPhysics(),
           child: Column(
             // Column is also a layout widget. It takes a list of children and
             // arranges them vertically. By default, it sizes itself to fit its
@@ -100,54 +119,61 @@ class _MyHomePageState extends State<MyHomePage> {
             // wireframe for each widget.
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Image.network(
-                'https://www.ikea.com/fr/fr/images/products/akerbaer-serre-interieur-exterieur-blanc__1122670_pe874640_s5.jpg?f=s',
-                //'https://docs.flutter.dev/assets/images/dash/dash-fainting.gif',
-                width: 200, 
-                height: 200,
-              ),
+              Image.asset('lib/assets/image.png'),
               Text(
-                '20°C',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 96, fontFamily: GoogleFonts.caesarDressing().fontFamily),
+                'HTTPS',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 48, fontFamily: GoogleFonts.googleSansCode().fontFamily),
               ),
-              const Text('You have pushed the button this many times:'),
+              const Text('Haytam Thérence Tite Projet Serre'),
               GridView.count(
                 crossAxisCount: 2,
                 shrinkWrap: true,
-                physics: AlwaysScrollableScrollPhysics(),
+                physics: NeverScrollableScrollPhysics(),
+                crossAxisSpacing: 4,
+                mainAxisSpacing: 4,
+                padding: const EdgeInsets.all(16),
                 children: [
                   Container(
-                    color: Colors.blue,
                     child: const Center(child: Text('Item 1')),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primaryContainer,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                   ),
                   Container(
-                    color: Colors.red,
                     child: const Center(child: Text('Item 2')),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primaryContainer,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                   ),
-                  Container(
-                    color: Colors.green,
-                    child: const Center(child: Text('Item 3')),
+                   Container(
+                    child: const Center(child: Text('Item 2')),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primaryContainer,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                   ),
-                  Container(
-                    color: Colors.yellow,
-                    child: const Center(child: Text('Item 4')),
+                   Container(
+                    child: const Center(child: Text('Item 2')),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primaryContainer,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                   ),
-                  Container(
-                    color: Colors.yellow,
-                    child: const Center(child: Text('Item 4')),
+                   Container(
+                    child: const Center(child: Text('Item 2')),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primaryContainer,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                   ),
-                  Container(
-                    color: Colors.yellow,
-                    child: const Center(child: Text('Item 4')),
-                  ),
-                  Container(
-                    color: Colors.yellow,
-                    child: const Center(child: Text('Item 4')),
-                  ),
-                  Container(
-                    color: Colors.yellow,
-                    child: const Center(child: Text('Item 4')),
-                    
+                   Container(
+                    child: const Center(child: Text('Item 2')),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primaryContainer,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                   ),
                 ],
               ),
