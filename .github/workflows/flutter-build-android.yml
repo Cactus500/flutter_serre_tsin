@@ -1,4 +1,4 @@
-name: Flutter Build Android
+name: Flutter Android Signed APK
 
 on:
   push:
@@ -27,11 +27,26 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Build APK
+      - name: Decode keystore
+        run: |
+          echo "$ANDROID_RELEASE_KEY" | base64 --decode > android/app/release-keystore.jks
+        env:
+          ANDROID_RELEASE_KEY: ${{ secrets.ANDROID_RELEASE_KEY }}
+
+      - name: Create key.properties
+        run: |
+          cat <<EOF > android/key.properties
+          storePassword=${{ secrets.ANDROID_RELEASE_KEY_PASSWORD }}
+          keyPassword=${{ secrets.ANDROID_RELEASE_KEY_PASSWORD }}
+          keyAlias=release
+          storeFile=release-keystore.jks
+          EOF
+
+      - name: Build release APK
         run: flutter build apk --release
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: app-release-apk
-          path: build/app/outputs/apk/serre.apk
+          path: build/app/outputs/flutter-apk/app-release.apk
