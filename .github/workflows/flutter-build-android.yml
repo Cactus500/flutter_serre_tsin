@@ -1,0 +1,56 @@
+name: Flutter Android Signed APK
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Install dependencies
+        working-directory: flutter_serre_tsin
+        run: flutter pub get
+
+      - name: Decode keystore
+        working-directory: flutter_serre_tsin/android/app
+        run: |
+          echo "$ANDROID_RELEASE_KEY" | base64 --decode > release-keystore.jks
+        env:
+          ANDROID_RELEASE_KEY: ${{ secrets.ANDROID_RELEASE_KEY }}
+
+      - name: Create key.properties
+        working-directory: flutter_serre_tsin/android
+        run: |
+          cat <<EOF > key.properties
+          storePassword=${{ secrets.ANDROID_RELEASE_KEY_PASSWORD }}
+          keyPassword=${{ secrets.ANDROID_RELEASE_KEY_PASSWORD }}
+          keyAlias=release
+          storeFile=release-keystore.jks
+          EOF
+
+      - name: Build release APK
+        working-directory: flutter_serre_tsin
+        run: flutter build apk --release
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
