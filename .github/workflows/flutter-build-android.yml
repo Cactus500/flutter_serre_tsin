@@ -1,28 +1,37 @@
-name: Build and distribute
+name: Flutter Build Android
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
+  pull_request:
 
 jobs:
   build:
-    name: build
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
 
-      - uses: cedvdb/action-flutter-build-android@v2
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
         with:
-          keystore-base64: ${{ secrets.ANDROID_RELEASE_KEY }}
-          keystore-password: "${{ secrets.ANDROID_RELEASE_KEY_PASSWORD }}"
-          # optionals
-          build-cmd: flutter build apk --release --flavor dev
-          working-directory: ./flutter_serre_tsin/
-          
-      - name: Archive APK
-        uses: actions/upload-artifact@v2
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
         with:
-          name: release-apk
-          # Try running the build locally with the build command to be sure of this path
-          path: build/app/outputs/flutter-apk/serre.apk
+          channel: stable
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build APK
+        run: flutter build apk --release
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-apk
+          path: build/app/outputs/apk/serre.apk
