@@ -37,18 +37,23 @@ class MyApp extends StatelessWidget {
           surface: Colors.grey[200]!,
           //onSurface: Colors.black,
           //secondaryContainer: Colors.white,
-          primaryContainer: Colors.white,
+          //primaryContainer: Colors.white,
           dynamicSchemeVariant: DynamicSchemeVariant.fidelity,
         ),
         
       ),
-      darkTheme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.white,
-          surface: Colors.black,
-          onSurface: Colors.white,
-          dynamicSchemeVariant: DynamicSchemeVariant.fidelity,
-        ),),
+      //darkTheme: ThemeData.dark().copyWith(
+      //  colorScheme: ColorScheme.fromSeed(
+      //    seedColor: Colors.black,
+      //    surface: Colors.grey[800]!,
+      //    onSurface: Colors.white,
+      //    //secondaryContainer: Colors.black,
+      //    //primaryContainer: Colors.black,
+      //    brightness: Brightness.dark,
+      //    surfaceContainer: Colors.black,
+      //    dynamicSchemeVariant: DynamicSchemeVariant.fidelity,
+      //  ),
+      //),
       
       home: const MyHomePage(title: 'TSIN 2026'),
     );
@@ -119,7 +124,11 @@ class _MyHomePageState extends State<MyHomePage> {
             // wireframe for each widget.
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Image.asset('lib/assets/image.png'),
+              Image.network(
+                'https://raw.githubusercontent.com/Cactus500/flutter_serre_tsin/refs/heads/main/flutter_serre_tsin/lib/assets/image.png?token=GHSAT0AAAAAADT5BIGJJ25L4ZF4PJHQEZ742LU55RA',
+                height: 200,
+                width: 600,
+              ),
               Text(
                 'HTTPS',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 48, fontFamily: GoogleFonts.googleSansCode().fontFamily),
