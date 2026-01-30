@@ -78,8 +78,8 @@ class MyHomePage extends StatefulWidget {
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
-const double radiSquare = 24;
-const double radiRound = 800;
+const double radiSquare = 24.0;
+const double radiRound = 800.0;
 
 class _MyHomePageState extends State<MyHomePage> {
   @override
