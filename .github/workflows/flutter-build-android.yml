@@ -28,6 +28,10 @@ jobs:
         working-directory: flutter_serre_tsin
         run: flutter pub get
 
+      - name: Fix outdated
+        working-directory: flutter_serre_tsin
+        run: flutter pub outdated
+        
       - name: Decode keystore
         working-directory: flutter_serre_tsin/android
         run: |
