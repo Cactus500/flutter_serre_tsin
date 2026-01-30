@@ -78,8 +78,8 @@ class MyHomePage extends StatefulWidget {
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
-const radiSquare = 24;
-const radiRound = 800;
+const double radiSquare = 24;
+const double radiRound = 800;
 
 class _MyHomePageState extends State<MyHomePage> {
   @override
@@ -200,7 +200,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       padding : const EdgeInsets.all(16.0),
                       child:
                         Column(
-                          spacing: 4,
+                          
                           children: [
                             const TextField(
                               decoration: InputDecoration(
