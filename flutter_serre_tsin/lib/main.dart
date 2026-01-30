@@ -1,6 +1,7 @@
+//import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+//import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-
 void main() {
   runApp(const MyApp());
 }
@@ -14,7 +15,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        textTheme: GoogleFonts.interTextTheme(),
+        textTheme: GoogleFonts.macondoTextTheme(),
 
         // This is the theme of your application.
         //
@@ -77,6 +78,8 @@ class MyHomePage extends StatefulWidget {
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
+const radiSquare = 24;
+const radiRound = 800;
 
 class _MyHomePageState extends State<MyHomePage> {
   @override
@@ -98,7 +101,7 @@ class _MyHomePageState extends State<MyHomePage> {
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
         titleTextStyle: TextStyle(
-          fontFamily: GoogleFonts.googleSansCode().fontFamily,
+          fontFamily: GoogleFonts.googleSansCode().fontFamily!,
           fontSize: 20,
           fontWeight: FontWeight.w100,
         ),
@@ -125,12 +128,12 @@ class _MyHomePageState extends State<MyHomePage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Image.network(
-                'https://raw.githubusercontent.com/Cactus500/flutter_serre_tsin/refs/heads/main/flutter_serre_tsin/lib/assets/image.png?token=GHSAT0AAAAAADT5BIGJJ25L4ZF4PJHQEZ742LU55RA',
+                'https://raw.githubusercontent.com/Cactus500/flutter_serre_tsin/refs/heads/main/flutter_serre_tsin/lib/assets/image.png',
                 height: 200,
                 width: 600,
               ),
               Text(
-                'HTTPS',
+                'SERRE',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 48, fontFamily: GoogleFonts.googleSansCode().fontFamily),
               ),
               const Text('Haytam Thérence Tite Projet Serre'),
@@ -143,45 +146,75 @@ class _MyHomePageState extends State<MyHomePage> {
                 padding: const EdgeInsets.all(16),
                 children: [
                   Container(
-                    child: const Center(child: Text('Item 1')),
                     decoration: BoxDecoration(
                       color: Theme.of(context).colorScheme.primaryContainer,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(radiRound as double),
                     ),
+                    child: const Center(child: Icon(Icons.surfing, size: 48,)), // Icon representing "Item 1"
                   ),
                   Container(
-                    child: const Center(child: Text('Item 2')),
                     decoration: BoxDecoration(
                       color: Theme.of(context).colorScheme.primaryContainer,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(radiSquare as double),
                     ),
+                    child: const Center(child: Icon(Icons.water_outlined, size: 48)), // Icon representing "Item 2"
                   ),
                    Container(
-                    child: const Center(child: Text('Item 2')),
                     decoration: BoxDecoration(
                       color: Theme.of(context).colorScheme.primaryContainer,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(radiSquare as double),
                     ),
+                    child: const Center(child: Icon(Icons.icecream_outlined, size:48)),
                   ),
                    Container(
-                    child: const Center(child: Text('Item 2')),
                     decoration: BoxDecoration(
                       color: Theme.of(context).colorScheme.primaryContainer,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(radiSquare as double),
                     ),
+                    child: const Center(child: Text('HUMIDITÉ DE \nL\'AIR', textAlign: TextAlign.center)),
                   ),
                    Container(
-                    child: const Center(child: Text('Item 2')),
                     decoration: BoxDecoration(
                       color: Theme.of(context).colorScheme.primaryContainer,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(radiSquare as double),
                     ),
+                    child: const Center(child: Text('TROP COOL', textAlign: TextAlign.center)),
                   ),
                    Container(
-                    child: const Center(child: Text('Item 2')),
                     decoration: BoxDecoration(
                       color: Theme.of(context).colorScheme.primaryContainer,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(radiSquare as double),
+                      
+                    ),
+                    
+                    child: Padding(
+                      padding : const EdgeInsets.all(16.0),
+                      child:
+                        Column(
+                          spacing: 4,
+                          children: [
+                            const TextField(
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder(),
+                                labelText: 'Nom Plante',
+                                
+                              ),
+                              maxLines: 1,
+                              
+                              textAlign: TextAlign.center,
+                            ),
+                            FilledButton.icon(
+                              onPressed: DoNothingAction.new, 
+                              icon: const Icon(Icons.arrow_circle_up),
+                              label: const Text('Envoyer'),
+                              style: 
+                                FilledButton.styleFrom(
+                                  minimumSize: const Size.fromHeight(60),
+                                )
+                              ,
+                            ),
+                          ]
+                        ),
                     ),
                   ),
                 ],
