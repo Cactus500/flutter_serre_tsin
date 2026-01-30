@@ -15,7 +15,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        textTheme: GoogleFonts.googleSansCodeTextTheme(),
+        textTheme: GoogleFonts.macondoTextTheme(),
 
         // This is the theme of your application.
         //
