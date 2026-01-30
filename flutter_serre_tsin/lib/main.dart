@@ -15,9 +15,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        textTheme: TextTheme(
-          bodyMedium: TextStyle(fontFamily: 'GoogleSansCode'),
-        ),
+        textTheme: TextTheme( bodyMedium: TextStyle(fontFamily: 'GoogleSansCode'), bodyLarge: TextStyle(fontFamily: 'GoogleSansCode'), bodySmall: TextStyle(fontFamily: 'GoogleSansCode'), titleMedium: TextStyle(fontFamily: 'GoogleSansCode'), headlineMedium: TextStyle(fontFamily: 'GoogleSansCode'), ),
 
         // This is the theme of your application.
         //
@@ -106,7 +104,7 @@ class _MyHomePageState extends State<MyHomePage> {
         scrolledUnderElevation: 0,
         title: Text(widget.title),
         titleTextStyle: TextStyle(
-          fontFamily: Theme.of(context).textTheme.bodyMedium?.fontFamily,
+          fontFamily: 'GoogleSansCode',
           fontSize: 20,
           fontWeight: FontWeight.w100,
         ),
@@ -132,17 +130,18 @@ class _MyHomePageState extends State<MyHomePage> {
             // wireframe for each widget.
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Image.network(
-                'https://raw.githubusercontent.com/Cactus500/flutter_serre_tsin/refs/heads/main/flutter_serre_tsin/lib/assets/image.png',
-                height: 200,
-                width: 600,
-              ),
+              SizedBox(height: 200),
+              //Image.network(
+              //  'https://raw.githubusercontent.com/Cactus500/flutter_serre_tsin/refs/heads/main/flutter_serre_tsin/lib/assets/image.png',
+              //  height: 200,
+              //  width: 600,
+              //),
               Text(
                 'SERRE',
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                   fontSize: 48,
-                  fontFamily: Theme.of(context).textTheme.bodyMedium?.fontFamily,
+                  fontFamily: 'GoogleSansCode',
                 ),
               ),
               const Text('Haytam Thérence Tite Projet Serre'),
