@@ -1,5 +1,6 @@
 //import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 //import 'package:flutter/services.dart';
 //import 'package:google_fonts/google_fonts.dart';
 void main() {
@@ -40,8 +41,20 @@ class MyApp extends StatelessWidget {
           //secondaryContainer: Colors.white,
           primaryContainer: Colors.white,
           dynamicSchemeVariant: DynamicSchemeVariant.fidelity,
+          onPrimary: Colors.white
         ),
-        
+
+        appBarTheme: AppBarTheme(
+          backgroundColor: Colors.transparent,
+          foregroundColor: Theme.of(context).colorScheme.onSurface,
+          elevation: 0, 
+          scrolledUnderElevation: 0,
+          systemOverlayStyle: SystemUiOverlayStyle(
+            statusBarColor: Colors.transparent,
+            statusBarIconBrightness: Brightness.dark,
+            statusBarBrightness: Brightness.light,
+          ),
+        ),
       ),
       //darkTheme: ThemeData.dark().copyWith(
       //  colorScheme: ColorScheme.fromSeed(
@@ -78,7 +91,7 @@ class MyHomePage extends StatefulWidget {
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
-const double radiSquare = 24.0;
+const double radiSquare = 20.0;
 const double radiRound = 800.0;
 
 class _MyHomePageState extends State<MyHomePage> {
@@ -99,9 +112,6 @@ class _MyHomePageState extends State<MyHomePage> {
         //backgroundColor: Colors.white,
         // Here we take the value from the MyHomePage object that was created by
         // the App.build method, and use it to set our appbar title.
-        backgroundColor: Colors.transparent,
-        elevation: 0, 
-        scrolledUnderElevation: 0,
         title: Text(widget.title),
         titleTextStyle: TextStyle(
           fontFamily: 'GoogleSansCode',
@@ -157,61 +167,63 @@ class _MyHomePageState extends State<MyHomePage> {
                   Container(
                     decoration: BoxDecoration(
                       color: Theme.of(context).colorScheme.primaryContainer,
-                      borderRadius: BorderRadius.circular(radiRound as double),
+                      borderRadius: BorderRadius.circular(radiRound),
                     ),
                     child: const Center(child: Icon(Icons.surfing, size: 48,)), // Icon representing "Item 1"
                   ),
                   Container(
                     decoration: BoxDecoration(
                       color: Theme.of(context).colorScheme.primaryContainer,
-                      borderRadius: BorderRadius.circular(radiSquare as double),
+                      borderRadius: BorderRadius.circular(radiSquare),
                     ),
                     child: const Center(child: Icon(Icons.water_outlined, size: 48)), // Icon representing "Item 2"
                   ),
                    Container(
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primaryContainer,
-                      borderRadius: BorderRadius.circular(radiSquare as double),
+                      color: Theme.of(context).colorScheme.primary,
+                      borderRadius: BorderRadius.circular(radiSquare),
                     ),
-                    child: const Center(child: Icon(Icons.icecream_outlined, size:48)),
+                    child: Center(child: Icon(Icons.icecream_outlined, size:48, color: Theme.of(context).colorScheme.onPrimary)),
                   ),
                    Container(
                     decoration: BoxDecoration(
                       color: Theme.of(context).colorScheme.primaryContainer,
-                      borderRadius: BorderRadius.circular(radiSquare as double),
+                      borderRadius: BorderRadius.circular(radiSquare),
                     ),
-                    child: const Center(child: Text('HUMIDITÉ DE \nL\'AIR', textAlign: TextAlign.center)),
+                    child: Center(child: Text('HUMIDITÉ DE \nL\'AIR', textAlign: TextAlign.center,)),
                   ),
                    Container(
                     decoration: BoxDecoration(
                       color: Theme.of(context).colorScheme.primaryContainer,
-                      borderRadius: BorderRadius.circular(radiSquare as double),
+                      borderRadius: BorderRadius.circular(radiSquare),
                     ),
                     child: const Center(child: Text('TROP COOL', textAlign: TextAlign.center)),
                   ),
                    Container(
                     decoration: BoxDecoration(
                       color: Theme.of(context).colorScheme.primaryContainer,
-                      borderRadius: BorderRadius.circular(radiSquare as double),
+                      borderRadius: BorderRadius.circular(radiSquare),
                       
                     ),
-                    
                     child: Padding(
                       padding : const EdgeInsets.all(16.0),
                       child:
                         Column(
                           
                           children: [
-                            const TextField(
-                              decoration: InputDecoration(
-                                border: OutlineInputBorder(),
-                                labelText: 'Nom Plante',
-                                
+                            Expanded(child:
+                              const TextField(
+                                decoration: InputDecoration(
+                                  border: OutlineInputBorder(),
+                                  labelText: 'Nom Plante',
+
+                                ),
+                                maxLines: 5,
+
+                                textAlign: TextAlign.center,
                               ),
-                              maxLines: 1,
-                              
-                              textAlign: TextAlign.center,
                             ),
+                            const SizedBox(height: 8),
                             FilledButton.icon(
                               onPressed: DoNothingAction.new, 
                               icon: const Icon(Icons.arrow_circle_up),
@@ -220,7 +232,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                 FilledButton.styleFrom(
                                   minimumSize: const Size.fromHeight(60),
                                 )
-                              ,
+                              
                             ),
                           ]
                         ),
