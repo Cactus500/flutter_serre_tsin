@@ -131,7 +131,7 @@ class _MyHomePageState extends State<MyHomePage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Image.asset( 'lib/assets/image.png', height: 200, width: 600, ),
-              SizedBox(height: 200),
+              
               //Image.network(
               //  'https://raw.githubusercontent.com/Cactus500/flutter_serre_tsin/refs/heads/main/flutter_serre_tsin/lib/assets/image.png',
               //  height: 200,
