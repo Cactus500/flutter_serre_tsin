@@ -15,7 +15,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        textTheme: GoogleFonts.macondoTextTheme(),
+        textTheme: GoogleFonts.googleSansCodeTextTheme(),
 
         // This is the theme of your application.
         //
@@ -34,11 +34,11 @@ class MyApp extends StatelessWidget {
         // tested with just a hot reload.
         
         colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.white,
+          seedColor: Colors.green,
           surface: Colors.grey[200]!,
-          //onSurface: Colors.black,
+          onSurface: Colors.black,
           //secondaryContainer: Colors.white,
-          //primaryContainer: Colors.white,
+          primaryContainer: Colors.white,
           dynamicSchemeVariant: DynamicSchemeVariant.fidelity,
         ),
         
@@ -99,9 +99,12 @@ class _MyHomePageState extends State<MyHomePage> {
         //backgroundColor: Colors.white,
         // Here we take the value from the MyHomePage object that was created by
         // the App.build method, and use it to set our appbar title.
+        backgroundColor: Colors.transparent,
+        elevation: 0, 
+        scrolledUnderElevation: 0,
         title: Text(widget.title),
         titleTextStyle: TextStyle(
-          fontFamily: GoogleFonts.googleSansCode().fontFamily!,
+          fontFamily: Theme.of(context).textTheme.bodyMedium?.fontFamily,
           fontSize: 20,
           fontWeight: FontWeight.w100,
         ),
@@ -134,7 +137,11 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
               Text(
                 'SERRE',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 48, fontFamily: GoogleFonts.googleSansCode().fontFamily),
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 48,
+                  fontFamily: Theme.of(context).textTheme.bodyMedium?.fontFamily,
+                ),
               ),
               const Text('Haytam Thérence Tite Projet Serre'),
               GridView.count(
