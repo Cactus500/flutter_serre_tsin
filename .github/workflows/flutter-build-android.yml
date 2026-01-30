@@ -48,6 +48,9 @@ jobs:
           keyAlias=${{ secrets.ANDROID_RELEASE_KEY_ALIAS }}
           storeFile=release-keystore.jks
           EOF
+      - name: Debug key.properties
+        working-directory: flutter_serre_tsin/android/app
+        run: cat key.properties
 
       - name: Build release APK
         working-directory: flutter_serre_tsin
