@@ -33,14 +33,14 @@ jobs:
         run: flutter pub outdated
         
       - name: Decode keystore
-        working-directory: flutter_serre_tsin/android
+        working-directory: flutter_serre_tsin/android/app
         run: |
           echo "$ANDROID_RELEASE_KEY" | base64 --decode > release-keystore.jks
         env:
           ANDROID_RELEASE_KEY: ${{ secrets.ANDROID_RELEASE_KEY }}
 
       - name: Create key.properties
-        working-directory: flutter_serre_tsin/android
+        working-directory: flutter_serre_tsin/android/app
         run: |
           cat <<EOF > key.properties
           storePassword=${{ secrets.ANDROID_RELEASE_KEY_PASSWORD }}
@@ -48,6 +48,9 @@ jobs:
           keyAlias=${{ secrets.ANDROID_RELEASE_KEY_ALIAS }}
           storeFile=release-keystore.jks
           EOF
+      - name: Debug key.properties
+        working-directory: flutter_serre_tsin/android/app
+        run: cat key.properties
 
       - name: Build release APK
         working-directory: flutter_serre_tsin
