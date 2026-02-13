@@ -1,8 +1,9 @@
-//import 'package:flutter/foundation.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-//import 'package:flutter/services.dart';
-//import 'package:google_fonts/google_fonts.dart';
+import 'dart:math';
+
+
 void main() {
   runApp(const MyApp());
 }
@@ -178,28 +179,51 @@ class _MyHomePageState extends State<MyHomePage> {
                     ),
                     child: const Center(child: Icon(Icons.water_outlined, size: 48)), // Icon representing "Item 2"
                   ),
-                   Container(
+                  Container(
                     decoration: BoxDecoration(
                       color: Theme.of(context).colorScheme.primary,
                       borderRadius: BorderRadius.circular(radiSquare),
                     ),
                     child: Center(child: Icon(Icons.icecream_outlined, size:48, color: Theme.of(context).colorScheme.onPrimary)),
                   ),
-                   Container(
+                  Container(
                     decoration: BoxDecoration(
                       color: Theme.of(context).colorScheme.primaryContainer,
                       borderRadius: BorderRadius.circular(radiSquare),
                     ),
-                    child: Center(child: Text('HUMIDITÉ DE \nL\'AIR', textAlign: TextAlign.center,)),
-                  ),
-                   Container(
+                    child: Center(
+                      
+                      child: 
+                        RichText(
+                          textAlign: TextAlign.center,
+                          
+                          text: 
+                            TextSpan(
+                              text: Text( 'Humidité de\n L\'Air\n', style: TextStyle( fontSize: 16, fontFamily: 'GoogleSansCode', ), ).data,
+                              
+                              children: [
+                                TextSpan(
+                                  text: '${Random().nextInt(100)}%',
+                                  style: TextStyle(
+                                    fontSize: 32,
+                                    fontWeight: FontWeight.bold,
+                                    fontFamily: 'GoogleSansCode',
+                                  )
+                                )
+                              ]
+                            ), 
+                            )
+                        )
+                    ),
+                  
+                  Container(
                     decoration: BoxDecoration(
                       color: Theme.of(context).colorScheme.primaryContainer,
                       borderRadius: BorderRadius.circular(radiSquare),
                     ),
                     child: const Center(child: Text('TROP COOL', textAlign: TextAlign.center)),
                   ),
-                   Container(
+                  Container(
                     decoration: BoxDecoration(
                       color: Theme.of(context).colorScheme.primaryContainer,
                       borderRadius: BorderRadius.circular(radiSquare),
@@ -240,7 +264,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                 ],
               ),
-            ],
+            ]
           ),
         ),
       ),
