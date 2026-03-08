@@ -329,7 +329,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         TextFormField(
                           decoration: 
                             InputDecoration(
-                            labelText: widget.storage.lireclef('lecture').toString().isEmpty ? 'clé API lecture' : widget.storage.lireclef('lecture').toString(),
+                            labelText: Stockage().lireclef('lecture').toString().isEmpty ? 'clé API lecture' : Stockage().lireclef('lecture').toString(),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(radiSquare)
                             ),
@@ -355,7 +355,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         TextFormField(
                           decoration: 
                             InputDecoration(
-                            labelText: widget.storage.lireclef('ecriture').toString().isEmpty ? 'clé API écriture' : widget.storage.lireclef('ecriture').toString(),
+                            labelText: Stockage().lireclef('ecriture').toString().isEmpty ? 'clé API écriture' : Stockage().lireclef('ecriture').toString(),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(radiSquare)
                             ),
