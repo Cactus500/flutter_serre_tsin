@@ -1,8 +1,9 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:math';
-
+import 'dart:async';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
 
 void main() {
   runApp(const MyApp());
@@ -70,14 +71,110 @@ class MyApp extends StatelessWidget {
       //  ),
       //),
       
-      home: const MyHomePage(title: 'TSIN 2026'),
+      home: MyHomePage(
+        title: 'TSIN 2026',
+        storage: Stockage(),
+      ),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+/// Classe utilitaire pour stocker/charger la clé API en local.
+///
+/// Utilisation générale :
+/// - Pour lire la clé :
+///   - avec `await` (dans une fonction `async`):
+///     ```dart
+///     final key = await storage.lireclef();
+///     ```
+///   - avec `then` (pas `async` disponible, p.ex. dans `initState`):
+///     ```dart
+///     storage.lireclef().then((key) { setState(() => _pommedapi = key); });
+///     ```
+/// - Pour écrire la clé :
+///   - avec `await`:
+///     ```dart
+///     await storage.ecrireclef('ma-cle-api-123');
+///     ```
+///   - ou en chainant `.then` si besoin.
+///
+/// Gestion d'erreurs : encapsulez l'appel `await` dans un `try/catch`
+/// ou utilisez `.catchError(...)` sur la `Future` retournée.
+class Stockage {
+  Future<String> get _localPath async {
+    final directory = await getApplicationDocumentsDirectory();
 
+    return directory.path;
+  }
+
+  Future<File> get _placeDeRangementPommedapi async {
+    final path = await _localPath;
+    return File('$path/pommedapi.txt');
+  }
+  Future<File> get _placeDeRangementPommedereinette async {
+    final path = await _localPath;
+    return File('$path/pommedereinette.txt');
+  }
+  /// Lit la clé API depuis le fichier local et renvoie une `Future<String>`.
+  ///
+  /// Retourne une chaîne vide si le fichier n'existe pas ou en cas d'erreur.
+  /// Exemple d'usage :
+  /// ```dart
+  /// final key = await storage.lireclef();
+  /// ```
+  Future<String> lireclef(String type) async {
+    try {
+      if (type == 'lecture') {
+        final file = await _placeDeRangementPommedapi;
+
+        // Read the file as a string (API key saved as text)
+        final contents = await file.readAsString();
+
+        return contents;
+      } else if (type == 'ecriture') {
+        final file = await _placeDeRangementPommedapi;
+
+        // Read the file as a string (API key saved as text)
+        final contents = await file.readAsString();
+        return contents;
+      } else {
+        return 'Erreur 🫖';
+      }
+    } 
+    catch (e) {
+      // If encountering an error (no file / unreadable), return empty string
+      return '';
+    }
+  }
+
+  /// Écrit la clé API (chaîne) dans le fichier local et renvoie la `Future<File>`
+  /// correspondant à l'opération d'écriture.
+  ///
+  /// Exemple d'usage :
+  /// ```dart
+  /// await storage.ecrireclef('ma-cle-api-123');
+  /// // ou
+  /// storage.ecrireclef('ma-cle-api-123').then((file) { /* écrit */ });
+  /// ```
+  Future<File> ecrireclef(String clef, String type) async {
+    if (type == 'lecture') {
+      final file = await _placeDeRangementPommedapi;
+      return file.writeAsString(clef);
+    } else if (type == 'ecriture') {
+      final file = await _placeDeRangementPommedereinette;
+      return file.writeAsString(clef);
+    } else {
+      throw ArgumentError('Type de clé API inconnu : $type');
+    }
+    // Write the API key string to the file
+  }
+
+}
+
+
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key, required this.title, required this.storage});
+  final Stockage storage;
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
   // how it looks.
@@ -94,8 +191,73 @@ class MyHomePage extends StatefulWidget {
 }
 const double radiSquare = 20.0;
 const double radiRound = 800.0;
+//var _formKey = GlobalKey<FormState>();
 
 class _MyHomePageState extends State<MyHomePage> {
+  
+  String _pommedapi = '';
+  String _pommedereinette = '';
+
+  /// Exemple : charger la clé dans `initState` (pattern recommandé)
+  ///
+  /// Remarques :
+  /// - `initState()` ne peut pas être `async`. Si vous voulez utiliser `await`,
+  ///   créez une méthode `async` séparée et appelez-la depuis `initState()` :
+  ///
+  /// ```dart
+  /// @override
+  /// void initState() {
+  ///   super.initState();
+  ///   _loadKey(); // méthode async séparée
+  /// }
+  ///
+  /// Future<void> _loadKey() async {
+  ///   try {
+  ///     final key = await widget.storage.lireclef();
+  ///     setState(() => _pommedapi = key);
+  ///   } catch (e) {
+  ///     // gérer l'erreur (afficher un message, garder une valeur par défaut, ...)
+  ///   }
+  /// }
+  ///
+  /// Alternativement, utilisez `.then(...)` directement si vous préférez ne pas
+  /// créer une méthode `async` :
+  /// ```dart
+  /// widget.storage.lireclef().then((value) { setState(() => _pommedapi = value); });
+  /// ```
+
+  @override
+  void initState() {
+    super.initState();
+    widget.storage.lireclef('lecture').then((value) {
+      setState(() {
+        _pommedapi = value;
+      });
+    });
+    widget.storage.lireclef('ecriture').then((value) {
+      setState(() {
+        _pommedereinette = value;
+      });
+    });
+  }
+
+  Future<File> ecrireclef(String clef, String type) {
+    if (type == 'lecture') {
+      setState(() {
+        _pommedapi = clef;
+      });
+      // Write the variable as a string to the file.
+      return widget.storage.ecrireclef( _pommedapi, 'lecture');
+    } else if (type == 'ecriture') {
+      setState(() {
+        _pommedereinette = clef;
+      });
+      // Write the variable as a string to the file.
+      return widget.storage.ecrireclef( _pommedereinette, 'ecriture');
+    } else {
+      throw 'arrete de faire nimportequoi';
+    }
+  }
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done
@@ -157,6 +319,71 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               ),
               const Text('Haytam Thérence Tite Projet Serre'),
+              Padding(
+                padding: EdgeInsets.all( radiSquare ),
+                child: 
+                  Form(
+                    child:
+                    Column(
+                      children: [
+                        TextFormField(
+                          decoration: 
+                            InputDecoration(
+                            labelText: _pommedapi.isEmpty ? 'clé API lecture' : _pommedapi,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(radiSquare)
+                            ),
+                            ),
+                          // Ne pas effectuer d'opérations d'écriture dans le validateur.
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Veuillez entrer une clé API valide';
+                            }
+                            return null;
+                          },
+                          // Enregistrer la clé lorsque l'utilisateur soumet le champ (Enter)
+                          onFieldSubmitted: (value) {
+                            if (value.isNotEmpty) {
+                              ecrireclef(value, 'lecture');
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Clé READ enregistrée')),
+                              );
+                            }
+                          },
+                        ),
+                        const SizedBox(height: 16), // Espacement entre les champs
+                        TextFormField(
+                          decoration: 
+                            InputDecoration(
+                            labelText: _pommedereinette.isEmpty ? 'clé API écriture' : _pommedereinette,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(radiSquare)
+                            ),
+                            ),
+                          // Ne pas effectuer d'opérations d'écriture dans le validateur.
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Veuillez entrer une clé API valide';
+                            }
+                            return null;
+                          },
+                          // Enregistrer la clé lorsque l'utilisateur soumet le champ (Enter)
+                          onFieldSubmitted: (value) {
+                            if (value.isNotEmpty) {
+                              ecrireclef(value, 'ecriture');
+                              //envoie les infos a la fonction qui va appeler 
+                              //la classe stockage pour pommedereinette 
+                              //(clef ecriture)
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Clé WRITE enregistrée')),
+                              );
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+              ),
               GridView.count(
                 crossAxisCount: 2,
                 shrinkWrap: true,
