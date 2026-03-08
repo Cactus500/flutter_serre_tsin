@@ -132,7 +132,7 @@ class Stockage {
 
         return contents;
       } else if (type == 'ecriture') {
-        final file = await _placeDeRangementPommedapi;
+        final file = await _placeDeRangementPommedereinette;
 
         // Read the file as a string (API key saved as text)
         final contents = await file.readAsString();
@@ -329,7 +329,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         TextFormField(
                           decoration: 
                             InputDecoration(
-                            labelText: Stockage().lireclef('lecture').toString().isEmpty ? 'clé API lecture' : Stockage().lireclef('lecture').toString(),
+                            labelText: _pommedapi.isEmpty ? 'clé API lecture' : _pommedapi,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(radiSquare)
                             ),
@@ -355,7 +355,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         TextFormField(
                           decoration: 
                             InputDecoration(
-                            labelText: Stockage().lireclef('ecriture').toString().isEmpty ? 'clé API écriture' : Stockage().lireclef('ecriture').toString(),
+                            labelText: _pommedereinette.isEmpty ? 'clé API écriture' : _pommedereinette,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(radiSquare)
                             ),
@@ -371,6 +371,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           onFieldSubmitted: (value) {
                             if (value.isNotEmpty) {
                               ecrireclef(value, 'ecriture');
+                              
                               //envoie les infos a la fonction qui va appeler 
                               //la classe stockage pour pommedereinette 
                               //(clef ecriture)
