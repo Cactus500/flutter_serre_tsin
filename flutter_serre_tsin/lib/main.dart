@@ -4,6 +4,8 @@ import 'dart:math';
 import 'dart:async';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 void main() {
   runApp(const MyApp());
@@ -16,6 +18,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      
       title: 'Flutter Demo',
       theme: ThemeData(
         textTheme: TextTheme( bodyMedium: TextStyle(fontFamily: 'GoogleSansCode'), bodyLarge: TextStyle(fontFamily: 'GoogleSansCode'), bodySmall: TextStyle(fontFamily: 'GoogleSansCode'), titleMedium: TextStyle(fontFamily: 'GoogleSansCode'), headlineMedium: TextStyle(fontFamily: 'GoogleSansCode'), ),
@@ -48,7 +51,7 @@ class MyApp extends StatelessWidget {
 
         appBarTheme: AppBarTheme(
           backgroundColor: Colors.transparent,
-          foregroundColor: Theme.of(context).colorScheme.onSurface,
+          foregroundColor: Colors.black,
           elevation: 0, 
           scrolledUnderElevation: 0,
           systemOverlayStyle: SystemUiOverlayStyle(
@@ -72,9 +75,11 @@ class MyApp extends StatelessWidget {
       //),
       
       home: MyHomePage(
-        title: 'TSIN 2026',
+        title: '(⌐■_■) TSIN 2026 ',
         storage: Stockage(),
+
       ),
+
     );
   }
 }
@@ -170,8 +175,48 @@ class Stockage {
   }
 
 }
+//AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
+Future<Album> fetchAlbum() async {
+  final response = await http.get(
+    Uri.parse('https://api.thingspeak.com/channels/3260066/fields/7.json?results=2'),
+  );
 
+  if (response.statusCode == 200) {
+    // If the server did return a 200 OK response,
+    // then parse the JSON.
+    return Album.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
+  } else {
+    // If the server did not return a 200 OK response,
+    // then throw an exception.
+    throw Exception('Failed to load album');
+  }
+}
+
+class Album {
+  final String airHum;
+  final String airTemp;
+  final String solHum;
+  final String solTemp;
+  final String reservoirVol;
+
+  const Album({required this.airHum, required this.airTemp, required this.solHum, required this.solTemp, required this.reservoirVol});
+
+  factory Album.fromJson(Map<String, dynamic> json) {
+    return switch (json) {
+      {"channel":{"field1": String airHum,"field2": String airTemp,"field3": String solHum,"field4": String solTemp,"field5": String reservoirVol }} => Album(
+        airHum: airHum,
+        airTemp: airTemp,
+        solHum: solHum,
+        solTemp: solTemp,
+        reservoirVol: reservoirVol,
+      ),
+      _ => throw const FormatException('Pas reussi a piquer les infos de la serre 😒'),
+    };
+  }
+}
+
+//AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title, required this.storage});
   final Stockage storage;
@@ -260,6 +305,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
   @override
   Widget build(BuildContext context) {
+    
     // This method is rerun every time setState is called, for instance as done
     // by the _incrementCounter method above.
     //
@@ -267,6 +313,8 @@ class _MyHomePageState extends State<MyHomePage> {
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
     return Scaffold(
+      
+      extendBodyBehindAppBar: true,
       //backgroundColor: Colors.white,
       appBar: AppBar(
         // TRY THIS: Try changing the color here to a specific color (to
@@ -281,8 +329,11 @@ class _MyHomePageState extends State<MyHomePage> {
           fontSize: 20,
           fontWeight: FontWeight.w100,
         ),
+        
       ),
-      body: Center(
+      body: 
+      
+      Center(
         // Center is a layout widget. It takes a single child and positions it
         // in the middle of the parent.
         child: SingleChildScrollView(
@@ -301,8 +352,10 @@ class _MyHomePageState extends State<MyHomePage> {
             // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
             // action in the IDE, or press "p" in the console), to see the
             // wireframe for each widget.
+            
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              SizedBox(height: 64,),
               Image.asset( 'lib/assets/image.png', height: 200, width: 600, ),
               
               //Image.network(
@@ -405,14 +458,52 @@ class _MyHomePageState extends State<MyHomePage> {
                       color: Theme.of(context).colorScheme.primaryContainer,
                       borderRadius: BorderRadius.circular(radiSquare),
                     ),
-                    child: const Center(child: Icon(Icons.water_outlined, size: 48)), // Icon representing "Item 2"
+                    child: FutureBuilder<Album>(
+                      future: fetchAlbum(),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          return Center(child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                            Icon(Icons.water, size: 48,),
+                            //Text('Il reste', style: TextStyle(fontSize: 16, fontFamily: 'GoogleSansCode',),),
+                            Text('${snapshot.data!.reservoirVol}L', style: TextStyle(fontSize: 24, fontFamily: 'GoogleSansCode', fontWeight: FontWeight.bold),),
+                            // Text('dans le réservoir.', style: TextStyle(fontSize: 16, fontFamily: 'GoogleSansCode',),),
+                          ],
+                          ));
+                        } else if (snapshot.hasError) {
+                          return Center(child: Text('${snapshot.error}'));
+                        }
+                        // By default, show a loading spinner.
+                        return const CircularProgressIndicator();
+                      },
+                    ),
                   ),
                   Container(
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primary,
+                      color: Colors.white,//Theme.of(context).colorScheme.primary,
                       borderRadius: BorderRadius.circular(radiSquare),
                     ),
-                    child: Center(child: Icon(Icons.icecream_outlined, size:48, color: Theme.of(context).colorScheme.onPrimary)),
+                    child: FutureBuilder<Album>(
+                      future: fetchAlbum(),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          return Center(child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                            Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.grass_rounded, size: 48,), Icon(Icons.water_rounded, size: 48,)],),
+                            //Text('Il reste', style: TextStyle(fontSize: 16, fontFamily: 'GoogleSansCode',),),
+                            Text('${snapshot.data!.solHum}%', style: TextStyle(fontSize: 24, fontFamily: 'GoogleSansCode', fontWeight: FontWeight.bold),),
+                           
+                          ],
+                          ));
+                        } else if (snapshot.hasError) {
+                          return Center(child: Text('${snapshot.error}'));
+                        }
+                        // By default, show a loading spinner.
+                        return const CircularProgressIndicator();
+                      },
+                    ),
                   ),
                   Container(
                     decoration: BoxDecoration(
@@ -480,10 +571,6 @@ class _MyHomePageState extends State<MyHomePage> {
                               onPressed: DoNothingAction.new, 
                               icon: const Icon(Icons.arrow_circle_up),
                               label: const Text('Envoyer'),
-                              style: 
-                                FilledButton.styleFrom(
-                                  minimumSize: const Size.fromHeight(60),
-                                )
                               
                             ),
                           ]
