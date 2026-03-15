@@ -193,6 +193,10 @@ Future<Album> fetchAlbum() async {
   }
 }
 
+dynamic nomPlante(String nomplante) {
+  http.get(Uri.parse('https://api.thingspeak.com/update?api_key=HTTT6LFX3ZMDQ8N8&field6=$nomplante'));
+}
+
 class Album {
   final String airHum;
   final String airTemp;
@@ -586,24 +590,22 @@ class _MyHomePageState extends State<MyHomePage> {
                           
                           children: [
                             Expanded(child:
-                              const TextField(
-                                decoration: InputDecoration(
+                              TextFormField(
+                                  decoration: InputDecoration(
                                   border: OutlineInputBorder(),
                                   labelText: 'Nom Plante',
-
                                 ),
-                                maxLines: 5,
-
+                                onFieldSubmitted: (value) => {
+                                  nomPlante(value),
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Nom de la plante enregistré : $value')),
+                                  ),
+                                },
+                                maxLines: 1,
                                 textAlign: TextAlign.center,
                               ),
                             ),
-                            const SizedBox(height: 8),
-                            FilledButton.icon(
-                              onPressed: DoNothingAction.new, 
-                              icon: const Icon(Icons.arrow_circle_up),
-                              label: const Text('Envoyer'),
-                              
-                            ),
+                            
                           ]
                         ),
                     ),
