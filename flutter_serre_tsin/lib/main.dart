@@ -451,7 +451,25 @@ class _MyHomePageState extends State<MyHomePage> {
                       color: Theme.of(context).colorScheme.primaryContainer,
                       borderRadius: BorderRadius.circular(radiRound),
                     ),
-                    child: const Center(child: Icon(Icons.surfing, size: 48,)), // Icon representing "Item 1"
+                    child: FutureBuilder<Album>(
+                      future: fetchAlbum(),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          return Center(child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                            Text('AirHum', style: TextStyle(fontSize: 16, fontFamily: 'GoogleSansCode', fontWeight: FontWeight.w500),),
+                            //Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.grass_rounded, size: 48,), Icon(Icons.water_rounded, size: 48,)],),
+                            Text('${snapshot.data!.airHum}%', style: TextStyle(fontSize: 24, fontFamily: 'GoogleSansCode', fontWeight: FontWeight.bold),),
+                            ],
+                          ));
+                        } else if (snapshot.hasError) {
+                          return Center(child: Text('${snapshot.error}'));
+                        }
+                        // By default, show a loading spinner.
+                        return const CircularProgressIndicator();
+                      },
+                    ),
                   ),
                   Container(
                     decoration: BoxDecoration(
@@ -491,11 +509,10 @@ class _MyHomePageState extends State<MyHomePage> {
                           return Center(child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                            Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.grass_rounded, size: 48,), Icon(Icons.water_rounded, size: 48,)],),
-                            //Text('Il reste', style: TextStyle(fontSize: 16, fontFamily: 'GoogleSansCode',),),
+                            Text('SolHum', style: TextStyle(fontSize: 16, fontFamily: 'GoogleSansCode', fontWeight: FontWeight.w500),),
+                            //Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.grass_rounded, size: 48,), Icon(Icons.water_rounded, size: 48,)],),
                             Text('${snapshot.data!.solHum}%', style: TextStyle(fontSize: 24, fontFamily: 'GoogleSansCode', fontWeight: FontWeight.bold),),
-                           
-                          ],
+                            ],
                           ));
                         } else if (snapshot.hasError) {
                           return Center(child: Text('${snapshot.error}'));
@@ -510,29 +527,25 @@ class _MyHomePageState extends State<MyHomePage> {
                       color: Theme.of(context).colorScheme.primaryContainer,
                       borderRadius: BorderRadius.circular(radiSquare),
                     ),
-                    child: Center(
-                      
-                      child: 
-                        RichText(
-                          textAlign: TextAlign.center,
-                          
-                          text: 
-                            TextSpan(
-                              text: Text( 'Humidité de\n L\'Air\n', style: TextStyle( fontSize: 16, fontFamily: 'GoogleSansCode', ), ).data,
-                              
-                              children: [
-                                TextSpan(
-                                  text: '${Random().nextInt(100)}%',
-                                  style: TextStyle(
-                                    fontSize: 32,
-                                    fontWeight: FontWeight.bold,
-                                    fontFamily: 'GoogleSansCode',
-                                  )
-                                )
-                              ]
-                            ), 
-                            )
-                        )
+                    child: FutureBuilder<Album>(
+                      future: fetchAlbum(),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          return Center(child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                            //Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.cloud_circle, size: 48,), Icon(Icons.device_thermostat_rounded, size: 48,)],),
+                            Text('AirTemp', style: TextStyle(fontSize: 16, fontFamily: 'GoogleSansCode', fontWeight: FontWeight.w500),),
+                            Text('${snapshot.data!.airTemp}°C', style: TextStyle(fontSize: 24, fontFamily: 'GoogleSansCode', fontWeight: FontWeight.bold),),
+                            ],
+                          ));
+                        } else if (snapshot.hasError) {
+                          return Center(child: Text('${snapshot.error}'));
+                        }
+                        // By default, show a loading spinner.
+                        return const CircularProgressIndicator();
+                      },
+                    ),
                     ),
                   
                   Container(
@@ -540,7 +553,25 @@ class _MyHomePageState extends State<MyHomePage> {
                       color: Theme.of(context).colorScheme.primaryContainer,
                       borderRadius: BorderRadius.circular(radiSquare),
                     ),
-                    child: const Center(child: Text('TROP COOL', textAlign: TextAlign.center)),
+                    child: FutureBuilder<Album>(
+                      future: fetchAlbum(),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          return Center(child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                            Text('SolTemp', style: TextStyle(fontSize: 16, fontFamily: 'GoogleSansCode', fontWeight: FontWeight.w500),),
+                            //Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.grass_rounded, size: 48,), Icon(Icons.water_rounded, size: 48,)],),
+                            Text('${snapshot.data!.solTemp}°C', style: TextStyle(fontSize: 24, fontFamily: 'GoogleSansCode', fontWeight: FontWeight.bold),),
+                            ],
+                          ));
+                        } else if (snapshot.hasError) {
+                          return Center(child: Text('${snapshot.error}'));
+                        }
+                        // By default, show a loading spinner.
+                        return const CircularProgressIndicator();
+                      },
+                    ),
                   ),
                   Container(
                     decoration: BoxDecoration(
