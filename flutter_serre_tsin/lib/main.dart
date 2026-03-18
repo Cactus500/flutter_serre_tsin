@@ -200,6 +200,64 @@ dynamic nomPlante(String nomplante) {
   http.get(Uri.parse('https://api.thingspeak.com/update?api_key=$pom&field6=$nomplante'));
 }
 
+dynamic prefplante(String nomdonne) async {
+  final pom  = Stockage().lireclef('ecriture').toString();
+  final file = File('plantes.csv');
+  final lines = await file.readAsLines();
+  for (var line in lines) {
+    var cols = line.split(',');
+
+    var nom = cols[0];
+    var prefs = cols[1];
+
+    if (nom == nomdonne) {
+      final preferencesdecetteplante = prefs;
+      http.get(Uri.parse('https://api.thingspeak.com/update?api_key=$pom&field7=$preferencesdecetteplante'));
+      return preferencesdecetteplante;
+    }
+  }
+}
+int levenshtein(String s, String t) {
+  int m = s.length;
+  int n = t.length;
+
+  List<List<int>> dp = List.generate(
+    m + 1,
+    (_) => List.filled(n + 1, 0),
+  );
+
+  for (int i = 0; i <= m; i++) dp[i][0] = i;
+  for (int j = 0; j <= n; j++) dp[0][j] = j;
+
+  for (int i = 1; i <= m; i++) {
+    for (int j = 1; j <= n; j++) {
+      int cost = (s[i - 1] == t[j - 1]) ? 0 : 1;
+
+      dp[i][j] = [
+        dp[i - 1][j] + 1,     // suppression
+        dp[i][j - 1] + 1,     // insertion
+        dp[i - 1][j - 1] + cost // remplacement
+      ].reduce((a, b) => a < b ? a : b);
+    }
+  }
+
+  return dp[m][n];
+}
+
+dynamic autocorrect(String fkro) async {
+  int threshold = 2;
+                                  
+  final lines = await File('plantes.csv').readAsLines();
+  for (var line in lines) {
+    var cols = line.split(',');
+    var name = cols[0];
+
+    if (levenshtein(name.toLowerCase(), fkro.toLowerCase()) <= threshold) {
+      return name;
+    }
+  }
+}
+
 class Album {
   final String airHum;
   final String airTemp;
@@ -594,19 +652,23 @@ class _MyHomePageState extends State<MyHomePage> {
                           children: [
                             Expanded(child:
                               TextFormField(
-                                  decoration: InputDecoration(
+                                decoration: InputDecoration(
                                   border: OutlineInputBorder(),
                                   labelText: 'Nom Plante',
                                 ),
                                 onFieldSubmitted: (value) => {
+                                  value = autocorrect(value.toString()),
                                   nomPlante(value),
+                                  prefplante(value),
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('Nom de la plante enregistré : $value')),
+                                    SnackBar(content: Text('Nom de la plante enregistré : $value, PrEfS : ${prefplante(value)} c(0-0c)')),
                                   ),
+                                  Text('$prefplante(value)')
                                 },
                                 maxLines: 1,
                                 textAlign: TextAlign.center,
                               ),
+                              
                             ),
                             
                           ]
