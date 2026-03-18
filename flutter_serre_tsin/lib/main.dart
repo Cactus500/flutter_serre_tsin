@@ -7,6 +7,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+//format csv : Nom de la plante,Temperature de l air (C),Humidite de l air (%),Temperature du sol (C),Humidite du sol (%),Marge (+/-)
+
 void main() {
   runApp(const MyApp());
 }
@@ -194,7 +196,8 @@ Future<Album> fetchAlbum() async {
 }
 
 dynamic nomPlante(String nomplante) {
-  http.get(Uri.parse('https://api.thingspeak.com/update?api_key=HTTT6LFX3ZMDQ8N8&field6=$nomplante'));
+  final pom  = Stockage().lireclef('ecriture').toString();
+  http.get(Uri.parse('https://api.thingspeak.com/update?api_key=$pom&field6=$nomplante'));
 }
 
 class Album {
