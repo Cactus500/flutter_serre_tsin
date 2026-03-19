@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+
 //format csv : Nom de la plante,Temperature de l air (C),Humidite de l air (%),Temperature du sol (C),Humidite du sol (%),Marge (+/-)
 
 void main() {
@@ -59,7 +60,7 @@ class MyApp extends StatelessWidget {
           systemOverlayStyle: SystemUiOverlayStyle(
             statusBarColor: Colors.transparent,
             statusBarIconBrightness: Brightness.dark,
-            statusBarBrightness: Brightness.light,
+            statusBarBrightness: Brightness.dark,
           ),
         ),
       ),
@@ -195,27 +196,25 @@ Future<Album> fetchAlbum() async {
   }
 }
 
-dynamic nomPlante(String nomplante) {
+void nomPlante(String nomplante) {
   final pom  = Stockage().lireclef('ecriture').toString();
   http.get(Uri.parse('https://api.thingspeak.com/update?api_key=$pom&field6=$nomplante'));
 }
 
-dynamic prefplante(String nomdonne) async {
+String prefplante(String nomdonne) {
   final pom  = Stockage().lireclef('ecriture').toString();
   final file = File('plantes.csv');
-  final lines = await file.readAsLines();
+    final lines = file.readAsLinesSync();
   for (var line in lines) {
     var cols = line.split(',');
-
     var nom = cols[0];
-    var prefs = cols[1];
-
     if (nom == nomdonne) {
-      final preferencesdecetteplante = prefs;
-      http.get(Uri.parse('https://api.thingspeak.com/update?api_key=$pom&field7=$preferencesdecetteplante'));
-      return preferencesdecetteplante;
+      http.get(Uri.parse('https://api.thingspeak.com/update?api_key=$pom&field7=${cols.sublist(1).join(',')}'));
+      return cols.sublist(1).join(',');
+      
     }
   }
+  return '0';
 }
 int levenshtein(String s, String t) {
   int m = s.length;
@@ -226,8 +225,8 @@ int levenshtein(String s, String t) {
     (_) => List.filled(n + 1, 0),
   );
 
-  for (int i = 0; i <= m; i++) dp[i][0] = i;
-  for (int j = 0; j <= n; j++) dp[0][j] = j;
+  for (int i = 0; i <= m; i++) { dp[i][0] = i;}
+  for (int j = 0; j <= n; j++) { dp[0][j] = j;}
 
   for (int i = 1; i <= m; i++) {
     for (int j = 1; j <= n; j++) {
@@ -244,7 +243,7 @@ int levenshtein(String s, String t) {
   return dp[m][n];
 }
 
-dynamic autocorrect(String fkro) async {
+Future<String?> autocorrect(String fkro) async {
   int threshold = 2;
                                   
   final lines = await File('plantes.csv').readAsLines();
@@ -256,6 +255,7 @@ dynamic autocorrect(String fkro) async {
       return name;
     }
   }
+  return null;
 }
 
 class Album {
@@ -657,13 +657,12 @@ class _MyHomePageState extends State<MyHomePage> {
                                   labelText: 'Nom Plante',
                                 ),
                                 onFieldSubmitted: (value) => {
-                                  value = autocorrect(value.toString()),
+                                  //value = autocorrect(value.toString()),
                                   nomPlante(value),
                                   prefplante(value),
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('Nom de la plante enregistré : $value, PrEfS : ${prefplante(value)} c(0-0c)')),
+                                    SnackBar(content: Text('Nom de la plante enregistré : $value, PrEfS : ${prefplante(value.toString()).toString()} c(0-0c)')),
                                   ),
-                                  Text('$prefplante(value)')
                                 },
                                 maxLines: 1,
                                 textAlign: TextAlign.center,
