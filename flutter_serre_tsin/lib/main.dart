@@ -200,21 +200,44 @@ void nomPlante(String nomplante) {
   final pom  = Stockage().lireclef('ecriture').toString();
   http.get(Uri.parse('https://api.thingspeak.com/update?api_key=$pom&field6=$nomplante'));
 }
+Future<String> prefplante(String nomdonne) async {
+  try {
+    final pom = Stockage().lireclef('ecriture').toString();
+    final file = File('plantes.csv');
 
-String prefplante(String nomdonne) {
-  final pom  = Stockage().lireclef('ecriture').toString();
-  final file = File('plantes.csv');
-    final lines = file.readAsLinesSync();
-  for (var line in lines) {
-    var cols = line.split(',');
-    var nom = cols[0];
-    if (nom == nomdonne) {
-      http.get(Uri.parse('https://api.thingspeak.com/update?api_key=$pom&field7=${cols.sublist(1).join(',')}'));
-      return cols.sublist(1).join(',');
-      
+    if (!await file.exists()) {
+      return '0';
     }
+
+    final lines = await file.readAsLines();
+
+    for (var line in lines) {
+      if (line.trim().isEmpty) continue;
+
+      var cols = line.split(',');
+
+      if (cols.isEmpty) continue;
+
+      var nom = cols[0];
+
+      if (nom == nomdonne) {
+        var data = cols.sublist(1).join(',');
+
+        await http.get(
+          Uri.parse(
+            'https://api.thingspeak.com/update?api_key=$pom&field7=$data',
+          ),
+        );
+
+        return data;
+      }
+    }
+
+    return '0';
+  } catch (e) {
+    
+    return '0';
   }
-  return '0';
 }
 int levenshtein(String s, String t) {
   int m = s.length;
