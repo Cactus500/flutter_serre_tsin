@@ -123,6 +123,11 @@ class Stockage {
     final path = await _localPath;
     return File('$path/pommedereinette.txt');
   }
+
+  Future<File> get _plantescsv async {
+    final path = await _localPath;
+    return File('$path/plantes.csv');
+  }
   /// Lit la clé API depuis le fichier local et renvoie une `Future<String>`.
   ///
   /// Retourne une chaîne vide si le fichier n'existe pas ou en cas d'erreur.
@@ -203,11 +208,8 @@ void nomPlante(String nomplante) {
 Future<String> prefplante(String nomdonne) async {
   try {
     final pom = Stockage().lireclef('ecriture').toString();
-    final file = File('plantes.csv');
+    final file = File(Stockage()._plantescsv.toString());
 
-    if (!await file.exists()) {
-      return '0';
-    }
 
     final lines = await file.readAsLines();
 
@@ -220,7 +222,7 @@ Future<String> prefplante(String nomdonne) async {
 
       var nom = cols[0];
 
-      if (nom == nomdonne) {
+      if (nom.toLowerCase() == nomdonne.toLowerCase().trim()) {
         var data = cols.sublist(1).join(',');
 
         await http.get(
@@ -683,7 +685,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   //value = autocorrect(value.toString()),
                                   nomPlante(value);
                                   String result = await prefplante(value);
-                                  
+
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(content: Text('Nom de la plante enregistré : $value, PrEfS : $result c(0-0c)')),
                                   );
