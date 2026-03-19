@@ -682,10 +682,11 @@ class _MyHomePageState extends State<MyHomePage> {
                                 onFieldSubmitted: (value) => {
                                   //value = autocorrect(value.toString()),
                                   nomPlante(value),
-                                  prefplante(value),
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('Nom de la plante enregistré : $value, PrEfS : ${prefplante(value.toString()).toString()} c(0-0c)')),
-                                  ),
+                                  prefplante(value).then((result) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text('Nom de la plante enregistré : $value, PrEfS : $result c(0-0c)')),
+                                    );
+                                  }),
                                 },
                                 maxLines: 1,
                                 textAlign: TextAlign.center,
