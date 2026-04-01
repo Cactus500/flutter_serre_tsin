@@ -210,16 +210,8 @@ Future<String?> prefplante(String nomdonne) async {
   final pom = await Stockage().lireclef('ecriture');
   if (pom.isEmpty) return null;
 
-  String rawCsv;
-  try {
-    rawCsv = await rootBundle.loadString('lib/plantes.csv');
-  } catch (e) {
-    // Fallback: file from working directory
-    final file = File('plantes.csv');
-    if (!await file.exists()) return null;
-    rawCsv = await file.readAsString();
-  }
-
+  final rawCsv = await rootBundle.loadString('lib/plantes.csv');
+  final query = nomdonne.trim().toLowerCase();
   final lines = rawCsv
       .split(RegExp(r"\r?\n"))
       .where((l) => l.trim().isNotEmpty)
@@ -229,10 +221,10 @@ Future<String?> prefplante(String nomdonne) async {
     final cols = line.split(',');
     if (cols.length < 2) continue;
 
-    final nom = cols[0].trim();
+    final nom = cols[0].trim().toLowerCase();
     final prefs = cols[1].trim();
 
-    if (nom.toLowerCase() == nomdonne.toLowerCase()) {
+    if (nom == query) {
       await http.get(
         Uri.parse(
           'https://api.thingspeak.com/update?api_key=$pom&field7=$prefs',
@@ -276,14 +268,8 @@ int levenshtein(String s, String t) {
 Future<String?> autocorrect(String fkro) async {
   int threshold = 2;
 
-  String rawCsv;
-  try {
-    rawCsv = await rootBundle.loadString('lib/plantes.csv');
-  } catch (e) {
-    final file = File('plantes.csv');
-    if (!await file.exists()) return null;
-    rawCsv = await file.readAsString();
-  }
+  final rawCsv = await rootBundle.loadString('lib/plantes.csv');
+  final query = fkro.trim().toLowerCase();
 
   final lines = rawCsv
       .split(RegExp(r"\r?\n"))
@@ -295,7 +281,7 @@ Future<String?> autocorrect(String fkro) async {
     if (cols.isEmpty) continue;
     final name = cols[0].trim();
 
-    if (levenshtein(name.toLowerCase(), fkro.toLowerCase()) <= threshold) {
+    if (levenshtein(name.toLowerCase(), query) <= threshold) {
       return name;
     }
   }
