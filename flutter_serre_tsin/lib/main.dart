@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'dart:math';
 import 'dart:async';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
@@ -15,15 +14,20 @@ void main() {
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-  
+
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      
       title: 'Flutter Demo',
       theme: ThemeData(
-        textTheme: TextTheme( bodyMedium: TextStyle(fontFamily: 'GoogleSansCode'), bodyLarge: TextStyle(fontFamily: 'GoogleSansCode'), bodySmall: TextStyle(fontFamily: 'GoogleSansCode'), titleMedium: TextStyle(fontFamily: 'GoogleSansCode'), headlineMedium: TextStyle(fontFamily: 'GoogleSansCode'), ),
+        textTheme: TextTheme(
+          bodyMedium: TextStyle(fontFamily: 'GoogleSansCode'),
+          bodyLarge: TextStyle(fontFamily: 'GoogleSansCode'),
+          bodySmall: TextStyle(fontFamily: 'GoogleSansCode'),
+          titleMedium: TextStyle(fontFamily: 'GoogleSansCode'),
+          headlineMedium: TextStyle(fontFamily: 'GoogleSansCode'),
+        ),
 
         // This is the theme of your application.
         //
@@ -40,7 +44,6 @@ class MyApp extends StatelessWidget {
         //
         // This works for code too, not just values: Most code changes can be
         // tested with just a hot reload.
-        
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.green,
           surface: Colors.grey[200]!,
@@ -48,13 +51,13 @@ class MyApp extends StatelessWidget {
           //secondaryContainer: Colors.white,
           primaryContainer: Colors.white,
           dynamicSchemeVariant: DynamicSchemeVariant.fidelity,
-          onPrimary: Colors.white
+          onPrimary: Colors.white,
         ),
 
         appBarTheme: AppBarTheme(
           backgroundColor: Colors.transparent,
           foregroundColor: Colors.black,
-          elevation: 0, 
+          elevation: 0,
           scrolledUnderElevation: 0,
           systemOverlayStyle: SystemUiOverlayStyle(
             statusBarColor: Colors.transparent,
@@ -63,6 +66,7 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
+
       //darkTheme: ThemeData.dark().copyWith(
       //  colorScheme: ColorScheme.fromSeed(
       //    seedColor: Colors.black,
@@ -75,13 +79,7 @@ class MyApp extends StatelessWidget {
       //    dynamicSchemeVariant: DynamicSchemeVariant.fidelity,
       //  ),
       //),
-      
-      home: MyHomePage(
-        title: '(⌐■_■) TSIN 2026 ',
-        storage: Stockage(),
-
-      ),
-
+      home: MyHomePage(title: '(⌐■_■) TSIN 2026 ', storage: Stockage()),
     );
   }
 }
@@ -118,10 +116,12 @@ class Stockage {
     final path = await _localPath;
     return File('$path/pommedapi.txt');
   }
+
   Future<File> get _placeDeRangementPommedereinette async {
     final path = await _localPath;
     return File('$path/pommedereinette.txt');
   }
+
   /// Lit la clé API depuis le fichier local et renvoie une `Future<String>`.
   ///
   /// Retourne une chaîne vide si le fichier n'existe pas ou en cas d'erreur.
@@ -147,8 +147,7 @@ class Stockage {
       } else {
         return 'Erreur 🫖';
       }
-    } 
-    catch (e) {
+    } catch (e) {
       // If encountering an error (no file / unreadable), return empty string
       return '';
     }
@@ -175,13 +174,14 @@ class Stockage {
     }
     // Write the API key string to the file
   }
-
 }
 //AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
 Future<Album> fetchAlbum() async {
   final response = await http.get(
-    Uri.parse('https://api.thingspeak.com/channels/3260066/fields/7.json?results=2'),
+    Uri.parse(
+      'https://api.thingspeak.com/channels/3260066/fields/7.json?results=2',
+    ),
   );
 
   if (response.statusCode == 200) {
@@ -195,48 +195,77 @@ Future<Album> fetchAlbum() async {
   }
 }
 
-dynamic nomPlante(String nomplante) {
-  final pom  = Stockage().lireclef('ecriture').toString();
-  http.get(Uri.parse('https://api.thingspeak.com/update?api_key=$pom&field6=$nomplante'));
+Future<void> nomPlante(String nomplante) async {
+  final pom = await Stockage().lireclef('ecriture');
+  if (pom.isEmpty) return;
+
+  await http.get(
+    Uri.parse(
+      'https://api.thingspeak.com/update?api_key=$pom&field6=$nomplante',
+    ),
+  );
 }
 
-dynamic prefplante(String nomdonne) async {
-  final pom  = Stockage().lireclef('ecriture').toString();
-  final file = File('plantes.csv');
-  final lines = await file.readAsLines();
+Future<String?> prefplante(String nomdonne) async {
+  final pom = await Stockage().lireclef('ecriture');
+  if (pom.isEmpty) return null;
+
+  String rawCsv;
+  try {
+    rawCsv = await rootBundle.loadString('lib/plantes.csv');
+  } catch (e) {
+    // Fallback: file from working directory
+    final file = File('plantes.csv');
+    if (!await file.exists()) return null;
+    rawCsv = await file.readAsString();
+  }
+
+  final lines = rawCsv
+      .split(RegExp(r"\r?\n"))
+      .where((l) => l.trim().isNotEmpty)
+      .toList();
+
   for (var line in lines) {
-    var cols = line.split(',');
+    final cols = line.split(',');
+    if (cols.length < 2) continue;
 
-    var nom = cols[0];
-    var prefs = cols[1];
+    final nom = cols[0].trim();
+    final prefs = cols[1].trim();
 
-    if (nom == nomdonne) {
-      final preferencesdecetteplante = prefs;
-      http.get(Uri.parse('https://api.thingspeak.com/update?api_key=$pom&field7=$preferencesdecetteplante'));
-      return preferencesdecetteplante;
+    if (nom.toLowerCase() == nomdonne.toLowerCase()) {
+      await http.get(
+        Uri.parse(
+          'https://api.thingspeak.com/update?api_key=$pom&field7=$prefs',
+        ),
+      );
+      return prefs;
     }
   }
+
+  return null;
 }
+
 int levenshtein(String s, String t) {
   int m = s.length;
   int n = t.length;
 
-  List<List<int>> dp = List.generate(
-    m + 1,
-    (_) => List.filled(n + 1, 0),
-  );
+  List<List<int>> dp = List.generate(m + 1, (_) => List.filled(n + 1, 0));
 
-  for (int i = 0; i <= m; i++) dp[i][0] = i;
-  for (int j = 0; j <= n; j++) dp[0][j] = j;
+  for (int i = 0; i <= m; i++) {
+    dp[i][0] = i;
+  }
+  for (int j = 0; j <= n; j++) {
+    dp[0][j] = j;
+  }
 
   for (int i = 1; i <= m; i++) {
     for (int j = 1; j <= n; j++) {
       int cost = (s[i - 1] == t[j - 1]) ? 0 : 1;
 
       dp[i][j] = [
-        dp[i - 1][j] + 1,     // suppression
-        dp[i][j - 1] + 1,     // insertion
-        dp[i - 1][j - 1] + cost // remplacement
+        dp[i - 1][j] + 1, // suppression
+        dp[i][j - 1] + 1, // insertion
+        dp[i - 1][j - 1] + cost, // remplacement
       ].reduce((a, b) => a < b ? a : b);
     }
   }
@@ -244,18 +273,34 @@ int levenshtein(String s, String t) {
   return dp[m][n];
 }
 
-dynamic autocorrect(String fkro) async {
+Future<String?> autocorrect(String fkro) async {
   int threshold = 2;
-                                  
-  final lines = await File('plantes.csv').readAsLines();
+
+  String rawCsv;
+  try {
+    rawCsv = await rootBundle.loadString('lib/plantes.csv');
+  } catch (e) {
+    final file = File('plantes.csv');
+    if (!await file.exists()) return null;
+    rawCsv = await file.readAsString();
+  }
+
+  final lines = rawCsv
+      .split(RegExp(r"\r?\n"))
+      .where((l) => l.trim().isNotEmpty)
+      .toList();
+
   for (var line in lines) {
-    var cols = line.split(',');
-    var name = cols[0];
+    final cols = line.split(',');
+    if (cols.isEmpty) continue;
+    final name = cols[0].trim();
 
     if (levenshtein(name.toLowerCase(), fkro.toLowerCase()) <= threshold) {
       return name;
     }
   }
+
+  return null;
 }
 
 class Album {
@@ -265,18 +310,35 @@ class Album {
   final String solTemp;
   final String reservoirVol;
 
-  const Album({required this.airHum, required this.airTemp, required this.solHum, required this.solTemp, required this.reservoirVol});
+  const Album({
+    required this.airHum,
+    required this.airTemp,
+    required this.solHum,
+    required this.solTemp,
+    required this.reservoirVol,
+  });
 
   factory Album.fromJson(Map<String, dynamic> json) {
     return switch (json) {
-      {"channel":{"field1": String airHum,"field2": String airTemp,"field3": String solHum,"field4": String solTemp,"field5": String reservoirVol }} => Album(
-        airHum: airHum,
-        airTemp: airTemp,
-        solHum: solHum,
-        solTemp: solTemp,
-        reservoirVol: reservoirVol,
+      {
+        "channel": {
+          "field1": String airHum,
+          "field2": String airTemp,
+          "field3": String solHum,
+          "field4": String solTemp,
+          "field5": String reservoirVol,
+        },
+      } =>
+        Album(
+          airHum: airHum,
+          airTemp: airTemp,
+          solHum: solHum,
+          solTemp: solTemp,
+          reservoirVol: reservoirVol,
+        ),
+      _ => throw const FormatException(
+        'Pas reussi a piquer les infos de la serre 😒',
       ),
-      _ => throw const FormatException('Pas reussi a piquer les infos de la serre 😒'),
     };
   }
 }
@@ -299,14 +361,16 @@ class MyHomePage extends StatefulWidget {
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
+
 const double radiSquare = 20.0;
 const double radiRound = 800.0;
 //var _formKey = GlobalKey<FormState>();
 
 class _MyHomePageState extends State<MyHomePage> {
-  
   String _pommedapi = '';
   String _pommedereinette = '';
+  String _selectedPlantName = '';
+  String _selectedPlantPref = '';
 
   /// Exemple : charger la clé dans `initState` (pattern recommandé)
   ///
@@ -357,20 +421,20 @@ class _MyHomePageState extends State<MyHomePage> {
         _pommedapi = clef;
       });
       // Write the variable as a string to the file.
-      return widget.storage.ecrireclef( _pommedapi, 'lecture');
+      return widget.storage.ecrireclef(_pommedapi, 'lecture');
     } else if (type == 'ecriture') {
       setState(() {
         _pommedereinette = clef;
       });
       // Write the variable as a string to the file.
-      return widget.storage.ecrireclef( _pommedereinette, 'ecriture');
+      return widget.storage.ecrireclef(_pommedereinette, 'ecriture');
     } else {
       throw 'arrete de faire nimportequoi';
     }
   }
+
   @override
   Widget build(BuildContext context) {
-    
     // This method is rerun every time setState is called, for instance as done
     // by the _incrementCounter method above.
     //
@@ -378,7 +442,6 @@ class _MyHomePageState extends State<MyHomePage> {
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
     return Scaffold(
-      
       extendBodyBehindAppBar: true,
       //backgroundColor: Colors.white,
       appBar: AppBar(
@@ -394,11 +457,8 @@ class _MyHomePageState extends State<MyHomePage> {
           fontSize: 20,
           fontWeight: FontWeight.w100,
         ),
-        
       ),
-      body: 
-      
-      Center(
+      body: Center(
         // Center is a layout widget. It takes a single child and positions it
         // in the middle of the parent.
         child: SingleChildScrollView(
@@ -417,12 +477,11 @@ class _MyHomePageState extends State<MyHomePage> {
             // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
             // action in the IDE, or press "p" in the console), to see the
             // wireframe for each widget.
-            
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              SizedBox(height: 64,),
-              Image.asset( 'lib/assets/image.png', height: 200, width: 600, ),
-              
+              SizedBox(height: 64),
+              Image.asset('lib/assets/image.png', height: 200, width: 600),
+
               //Image.network(
               //  'https://raw.githubusercontent.com/Cactus500/flutter_serre_tsin/refs/heads/main/flutter_serre_tsin/lib/assets/image.png',
               //  height: 200,
@@ -438,70 +497,74 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
               const Text('Haytam Thérence Tite Projet Serre'),
               Padding(
-                padding: EdgeInsets.all( radiSquare ),
-                child: 
-                  Form(
-                    child:
-                    Column(
-                      children: [
-                        TextFormField(
-                          decoration: 
-                            InputDecoration(
-                            labelText: _pommedapi.isEmpty ? 'clé API lecture' : _pommedapi,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(radiSquare)
-                            ),
-                            ),
-                          // Ne pas effectuer d'opérations d'écriture dans le validateur.
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Veuillez entrer une clé API valide';
-                            }
-                            return null;
-                          },
-                          // Enregistrer la clé lorsque l'utilisateur soumet le champ (Enter)
-                          onFieldSubmitted: (value) {
-                            if (value.isNotEmpty) {
-                              ecrireclef(value, 'lecture');
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Clé READ enregistrée')),
-                              );
-                            }
-                          },
+                padding: EdgeInsets.all(radiSquare),
+                child: Form(
+                  child: Column(
+                    children: [
+                      TextFormField(
+                        decoration: InputDecoration(
+                          labelText: _pommedapi.isEmpty
+                              ? 'clé API lecture'
+                              : _pommedapi,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(radiSquare),
+                          ),
                         ),
-                        const SizedBox(height: 16), // Espacement entre les champs
-                        TextFormField(
-                          decoration: 
-                            InputDecoration(
-                            labelText: _pommedereinette.isEmpty ? 'clé API écriture' : _pommedereinette,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(radiSquare)
-                            ),
-                            ),
-                          // Ne pas effectuer d'opérations d'écriture dans le validateur.
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Veuillez entrer une clé API valide';
-                            }
-                            return null;
-                          },
-                          // Enregistrer la clé lorsque l'utilisateur soumet le champ (Enter)
-                          onFieldSubmitted: (value) {
-                            if (value.isNotEmpty) {
-                              ecrireclef(value, 'ecriture');
-                              
-                              //envoie les infos a la fonction qui va appeler 
-                              //la classe stockage pour pommedereinette 
-                              //(clef ecriture)
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Clé WRITE enregistrée')),
-                              );
-                            }
-                          },
+                        // Ne pas effectuer d'opérations d'écriture dans le validateur.
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Veuillez entrer une clé API valide';
+                          }
+                          return null;
+                        },
+                        // Enregistrer la clé lorsque l'utilisateur soumet le champ (Enter)
+                        onFieldSubmitted: (value) {
+                          if (value.isNotEmpty) {
+                            ecrireclef(value, 'lecture');
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Clé READ enregistrée'),
+                              ),
+                            );
+                          }
+                        },
+                      ),
+                      const SizedBox(height: 16), // Espacement entre les champs
+                      TextFormField(
+                        decoration: InputDecoration(
+                          labelText: _pommedereinette.isEmpty
+                              ? 'clé API écriture'
+                              : _pommedereinette,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(radiSquare),
+                          ),
                         ),
-                      ],
-                    ),
+                        // Ne pas effectuer d'opérations d'écriture dans le validateur.
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Veuillez entrer une clé API valide';
+                          }
+                          return null;
+                        },
+                        // Enregistrer la clé lorsque l'utilisateur soumet le champ (Enter)
+                        onFieldSubmitted: (value) {
+                          if (value.isNotEmpty) {
+                            ecrireclef(value, 'ecriture');
+
+                            //envoie les infos a la fonction qui va appeler
+                            //la classe stockage pour pommedereinette
+                            //(clef ecriture)
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Clé WRITE enregistrée'),
+                              ),
+                            );
+                          }
+                        },
+                      ),
+                    ],
                   ),
+                ),
               ),
               GridView.count(
                 crossAxisCount: 2,
@@ -520,14 +583,30 @@ class _MyHomePageState extends State<MyHomePage> {
                       future: fetchAlbum(),
                       builder: (context, snapshot) {
                         if (snapshot.hasData) {
-                          return Center(child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                            Text('AirHum', style: TextStyle(fontSize: 16, fontFamily: 'GoogleSansCode', fontWeight: FontWeight.w500),),
-                            //Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.grass_rounded, size: 48,), Icon(Icons.water_rounded, size: 48,)],),
-                            Text('${snapshot.data!.airHum}%', style: TextStyle(fontSize: 24, fontFamily: 'GoogleSansCode', fontWeight: FontWeight.bold),),
-                            ],
-                          ));
+                          return Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  'AirHum',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontFamily: 'GoogleSansCode',
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                //Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.grass_rounded, size: 48,), Icon(Icons.water_rounded, size: 48,)],),
+                                Text(
+                                  '${snapshot.data!.airHum}%',
+                                  style: TextStyle(
+                                    fontSize: 24,
+                                    fontFamily: 'GoogleSansCode',
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
                         } else if (snapshot.hasError) {
                           return Center(child: Text('${snapshot.error}'));
                         }
@@ -545,15 +624,24 @@ class _MyHomePageState extends State<MyHomePage> {
                       future: fetchAlbum(),
                       builder: (context, snapshot) {
                         if (snapshot.hasData) {
-                          return Center(child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                            Icon(Icons.water, size: 48,),
-                            //Text('Il reste', style: TextStyle(fontSize: 16, fontFamily: 'GoogleSansCode',),),
-                            Text('${snapshot.data!.reservoirVol}L', style: TextStyle(fontSize: 24, fontFamily: 'GoogleSansCode', fontWeight: FontWeight.bold),),
-                            // Text('dans le réservoir.', style: TextStyle(fontSize: 16, fontFamily: 'GoogleSansCode',),),
-                          ],
-                          ));
+                          return Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.water, size: 48),
+                                //Text('Il reste', style: TextStyle(fontSize: 16, fontFamily: 'GoogleSansCode',),),
+                                Text(
+                                  '${snapshot.data!.reservoirVol}L',
+                                  style: TextStyle(
+                                    fontSize: 24,
+                                    fontFamily: 'GoogleSansCode',
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                // Text('dans le réservoir.', style: TextStyle(fontSize: 16, fontFamily: 'GoogleSansCode',),),
+                              ],
+                            ),
+                          );
                         } else if (snapshot.hasError) {
                           return Center(child: Text('${snapshot.error}'));
                         }
@@ -564,72 +652,38 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                   Container(
                     decoration: BoxDecoration(
-                      color: Colors.white,//Theme.of(context).colorScheme.primary,
+                      color:
+                          Colors.white, //Theme.of(context).colorScheme.primary,
                       borderRadius: BorderRadius.circular(radiSquare),
                     ),
                     child: FutureBuilder<Album>(
                       future: fetchAlbum(),
                       builder: (context, snapshot) {
                         if (snapshot.hasData) {
-                          return Center(child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                            Text('SolHum', style: TextStyle(fontSize: 16, fontFamily: 'GoogleSansCode', fontWeight: FontWeight.w500),),
-                            //Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.grass_rounded, size: 48,), Icon(Icons.water_rounded, size: 48,)],),
-                            Text('${snapshot.data!.solHum}%', style: TextStyle(fontSize: 24, fontFamily: 'GoogleSansCode', fontWeight: FontWeight.bold),),
-                            ],
-                          ));
-                        } else if (snapshot.hasError) {
-                          return Center(child: Text('${snapshot.error}'));
-                        }
-                        // By default, show a loading spinner.
-                        return const CircularProgressIndicator();
-                      },
-                    ),
-                  ),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primaryContainer,
-                      borderRadius: BorderRadius.circular(radiSquare),
-                    ),
-                    child: FutureBuilder<Album>(
-                      future: fetchAlbum(),
-                      builder: (context, snapshot) {
-                        if (snapshot.hasData) {
-                          return Center(child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                            //Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.cloud_circle, size: 48,), Icon(Icons.device_thermostat_rounded, size: 48,)],),
-                            Text('AirTemp', style: TextStyle(fontSize: 16, fontFamily: 'GoogleSansCode', fontWeight: FontWeight.w500),),
-                            Text('${snapshot.data!.airTemp}°C', style: TextStyle(fontSize: 24, fontFamily: 'GoogleSansCode', fontWeight: FontWeight.bold),),
-                            ],
-                          ));
-                        } else if (snapshot.hasError) {
-                          return Center(child: Text('${snapshot.error}'));
-                        }
-                        // By default, show a loading spinner.
-                        return const CircularProgressIndicator();
-                      },
-                    ),
-                    ),
-                  
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primaryContainer,
-                      borderRadius: BorderRadius.circular(radiSquare),
-                    ),
-                    child: FutureBuilder<Album>(
-                      future: fetchAlbum(),
-                      builder: (context, snapshot) {
-                        if (snapshot.hasData) {
-                          return Center(child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                            Text('SolTemp', style: TextStyle(fontSize: 16, fontFamily: 'GoogleSansCode', fontWeight: FontWeight.w500),),
-                            //Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.grass_rounded, size: 48,), Icon(Icons.water_rounded, size: 48,)],),
-                            Text('${snapshot.data!.solTemp}°C', style: TextStyle(fontSize: 24, fontFamily: 'GoogleSansCode', fontWeight: FontWeight.bold),),
-                            ],
-                          ));
+                          return Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  'SolHum',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontFamily: 'GoogleSansCode',
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                //Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.grass_rounded, size: 48,), Icon(Icons.water_rounded, size: 48,)],),
+                                Text(
+                                  '${snapshot.data!.solHum}%',
+                                  style: TextStyle(
+                                    fontSize: 24,
+                                    fontFamily: 'GoogleSansCode',
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
                         } else if (snapshot.hasError) {
                           return Center(child: Text('${snapshot.error}'));
                         }
@@ -642,42 +696,149 @@ class _MyHomePageState extends State<MyHomePage> {
                     decoration: BoxDecoration(
                       color: Theme.of(context).colorScheme.primaryContainer,
                       borderRadius: BorderRadius.circular(radiSquare),
-                      
+                    ),
+                    child: FutureBuilder<Album>(
+                      future: fetchAlbum(),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          return Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                //Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.cloud_circle, size: 48,), Icon(Icons.device_thermostat_rounded, size: 48,)],),
+                                Text(
+                                  'AirTemp',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontFamily: 'GoogleSansCode',
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                Text(
+                                  '${snapshot.data!.airTemp}°C',
+                                  style: TextStyle(
+                                    fontSize: 24,
+                                    fontFamily: 'GoogleSansCode',
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        } else if (snapshot.hasError) {
+                          return Center(child: Text('${snapshot.error}'));
+                        }
+                        // By default, show a loading spinner.
+                        return const CircularProgressIndicator();
+                      },
+                    ),
+                  ),
+
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primaryContainer,
+                      borderRadius: BorderRadius.circular(radiSquare),
+                    ),
+                    child: FutureBuilder<Album>(
+                      future: fetchAlbum(),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          return Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  'SolTemp',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontFamily: 'GoogleSansCode',
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                //Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.grass_rounded, size: 48,), Icon(Icons.water_rounded, size: 48,)],),
+                                Text(
+                                  '${snapshot.data!.solTemp}°C',
+                                  style: TextStyle(
+                                    fontSize: 24,
+                                    fontFamily: 'GoogleSansCode',
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        } else if (snapshot.hasError) {
+                          return Center(child: Text('${snapshot.error}'));
+                        }
+                        // By default, show a loading spinner.
+                        return const CircularProgressIndicator();
+                      },
+                    ),
+                  ),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primaryContainer,
+                      borderRadius: BorderRadius.circular(radiSquare),
                     ),
                     child: Padding(
-                      padding : const EdgeInsets.all(16.0),
-                      child:
-                        Column(
-                          
-                          children: [
-                            Expanded(child:
-                              TextFormField(
-                                decoration: InputDecoration(
-                                  border: OutlineInputBorder(),
-                                  labelText: 'Nom Plante',
-                                ),
-                                onFieldSubmitted: (value) => {
-                                  value = autocorrect(value.toString()),
-                                  nomPlante(value),
-                                  prefplante(value),
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('Nom de la plante enregistré : $value, PrEfS : ${prefplante(value)} c(0-0c)')),
-                                  ),
-                                  Text('$prefplante(value)')
-                                },
-                                maxLines: 1,
-                                textAlign: TextAlign.center,
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder(),
+                                labelText: 'Nom Plante',
                               ),
-                              
+                              onFieldSubmitted: (value) async {
+                                final messenger = ScaffoldMessenger.of(context);
+                                final correctedName =
+                                    await autocorrect(value) ?? value;
+
+                                await nomPlante(correctedName);
+
+                                final prefs =
+                                    await prefplante(correctedName) ??
+                                    'non trouvé';
+
+                                if (!mounted) return;
+
+                                setState(() {
+                                  _selectedPlantName = correctedName;
+                                  _selectedPlantPref = prefs;
+                                });
+
+                                messenger.showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      'Nom de la plante enregistré : $correctedName, PrEfS : $prefs',
+                                    ),
+                                  ),
+                                );
+                              },
+                              maxLines: 1,
+                              textAlign: TextAlign.center,
                             ),
-                            
-                          ]
-                        ),
+                          ),
+
+                          const SizedBox(height: 8),
+                          Text(
+                            _selectedPlantName.isEmpty
+                                ? 'Aucune plante sélectionnée'
+                                : 'Plante: $_selectedPlantName - Préf: $_selectedPlantPref',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontFamily: 'GoogleSansCode',
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
               ),
-            ]
+            ],
           ),
         ),
       ),
