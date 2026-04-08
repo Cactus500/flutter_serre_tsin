@@ -198,10 +198,18 @@ Future<Album> fetchAlbum() async {
 Future<void> nomPlante(String nomplante) async {
   final pom = await Stockage().lireclef('ecriture');
   if (pom.isEmpty) return;
-
+  
+  final latest = await fetchAlbum();
   await http.post(
     Uri.parse(
-      'https://api.thingspeak.com/update?api_key=$pom&field7=$nomplante',
+      'https://api.thingspeak.com/update?api_key=$pom'
+      '&field1=${latest.airHum}'
+      '&field2=${latest.airTemp}'
+      '&field3=${latest.solHum}'
+      '&field4=${latest.solTemp}'
+      '&field5=${latest.reservoirVol}'
+      '&field6=${await prefplante(nomplante).then((prefs) => prefs ?? 'non trouvé')}'
+      '&field7=$nomplante',
     ),
   );
 }
@@ -209,6 +217,7 @@ Future<void> nomPlante(String nomplante) async {
 Future<String?> prefplante(String nomdonne) async {
   final pom = await Stockage().lireclef('ecriture');
   if (pom.isEmpty) return null;
+  final latest = await fetchAlbum();
 
   final rawCsv = await rootBundle.loadString('lib/plantes.csv');
   final query = nomdonne.trim().toLowerCase();
@@ -227,7 +236,14 @@ Future<String?> prefplante(String nomdonne) async {
     if (nom == query) {
       await http.post(
         Uri.parse(
-          'https://api.thingspeak.com/update?api_key=$pom&field7=$prefs',
+          'https://api.thingspeak.com/update?api_key=$pom'
+          '&field1=${latest.airHum}'
+          '&field2=${latest.airTemp}'
+          '&field3=${latest.solHum}'
+          '&field4=${latest.solTemp}'
+          '&field5=${latest.reservoirVol}'
+          '&field6=$prefs'
+          '&field7=$nom',
         ),
       );
       return prefs;
@@ -311,14 +327,14 @@ class Album {
         throw const FormatException('Feeds array is empty');
       }
       
-      final firstFeed = feeds[0] as Map<String, dynamic>;
+      final lastFeed = feeds[1] as Map<String, dynamic>;
       
       return Album(
-        airHum: firstFeed['field1']?.toString() ?? '0',
-        airTemp: firstFeed['field2']?.toString() ?? '0',
-        solHum: firstFeed['field3']?.toString() ?? '0',
-        solTemp: firstFeed['field4']?.toString() ?? '0',
-        reservoirVol: firstFeed['field5']?.toString() ?? '0',
+        airHum: lastFeed['field1']?.toString() ?? '0',
+        airTemp: lastFeed['field2']?.toString() ?? '0',
+        solHum: lastFeed['field3']?.toString() ?? '0',
+        solTemp: lastFeed['field4']?.toString() ?? '0',
+        reservoirVol: lastFeed['field5']?.toString() ?? '0',
       );
     } catch (e) {
       throw FormatException('Pas reussi a piquer les infos de la serre 😒: $e');
