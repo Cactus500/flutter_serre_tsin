@@ -305,29 +305,24 @@ class Album {
   });
 
   factory Album.fromJson(Map<String, dynamic> json) {
-    return switch (json) {
-      {
-        "feeds": {
-          0: {
-          "field1": String airHum,
-          "field2": String airTemp,
-          "field3": String solHum,
-          "field4": String solTemp,
-          "field5": String reservoirVol,
-          } 
-        },
-      } =>
-        Album(
-          airHum: airHum,
-          airTemp: airTemp,
-          solHum: solHum,
-          solTemp: solTemp,
-          reservoirVol: reservoirVol,
-        ),
-      _ => throw const FormatException(
-        'Pas reussi a piquer les infos de la serre 😒',
-      ),
-    };
+    try {
+      final feeds = json['feeds'] as List<dynamic>;
+      if (feeds.isEmpty) {
+        throw const FormatException('Feeds array is empty');
+      }
+      
+      final firstFeed = feeds[0] as Map<String, dynamic>;
+      
+      return Album(
+        airHum: firstFeed['field1']?.toString() ?? '0',
+        airTemp: firstFeed['field2']?.toString() ?? '0',
+        solHum: firstFeed['field3']?.toString() ?? '0',
+        solTemp: firstFeed['field4']?.toString() ?? '0',
+        reservoirVol: firstFeed['field5']?.toString() ?? '0',
+      );
+    } catch (e) {
+      throw FormatException('Pas reussi a piquer les infos de la serre 😒: $e');
+    }
   }
 }
 
