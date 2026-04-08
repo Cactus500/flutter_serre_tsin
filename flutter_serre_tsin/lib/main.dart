@@ -199,9 +199,9 @@ Future<void> nomPlante(String nomplante) async {
   final pom = await Stockage().lireclef('ecriture');
   if (pom.isEmpty) return;
 
-  await http.get(
+  await http.post(
     Uri.parse(
-      'https://api.thingspeak.com/update?api_key=$pom&field6=$nomplante',
+      'https://api.thingspeak.com/update?api_key=$pom&field7=$nomplante',
     ),
   );
 }
@@ -225,7 +225,7 @@ Future<String?> prefplante(String nomdonne) async {
     final prefs = cols[1].trim();
 
     if (nom == query) {
-      await http.get(
+      await http.post(
         Uri.parse(
           'https://api.thingspeak.com/update?api_key=$pom&field7=$prefs',
         ),
@@ -307,12 +307,14 @@ class Album {
   factory Album.fromJson(Map<String, dynamic> json) {
     return switch (json) {
       {
-        "channel": {
+        "feeds": {
+          0: {
           "field1": String airHum,
           "field2": String airTemp,
           "field3": String solHum,
           "field4": String solTemp,
           "field5": String reservoirVol,
+          } 
         },
       } =>
         Album(
