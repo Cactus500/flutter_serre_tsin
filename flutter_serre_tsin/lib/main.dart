@@ -122,6 +122,36 @@ class Stockage {
     return File('$path/pommedereinette.txt');
   }
 
+  Future<File> get _AH async {
+    final path = await _localPath;
+    return File('$path/ah.txt');
+  }
+  Future<File> get _AT async {
+    final path = await _localPath;
+    return File('$path/at.txt');
+  }
+  Future<File> get _SH async {
+    final path = await _localPath;
+    return File('$path/sh.txt');
+  }
+  Future<File> get _ST async {
+    final path = await _localPath;
+    return File('$path/st.txt');
+  }
+  Future<File> get _RV async {
+    final path = await _localPath;
+    return File('$path/rv.txt');
+  }
+  Future<File> get _PR async {
+    final path = await _localPath;
+    return File('$path/pr.txt');
+  }
+  Future<File> get _NO async {
+    final path = await _localPath;
+    return File('$path/no.txt');
+  }
+
+
   /// Lit la clé API depuis le fichier local et renvoie une `Future<String>`.
   ///
   /// Retourne une chaîne vide si le fichier n'existe pas ou en cas d'erreur.
@@ -174,7 +204,66 @@ class Stockage {
     }
     // Write the API key string to the file
   }
+
+  Future<String> liredata(String data, String place) async {
+    if (place == 'ah') {
+      final file = await _AH;
+      final contents = await file.readAsString();
+      return contents;
+    } else if (place == 'at') {
+      final file = await _AT;
+      final contents = await file.readAsString();
+      return contents;
+    } else if (place == 'sh') {
+      final file = await _SH;
+      final contents = await file.readAsString();
+      return contents;
+    } else if (place == 'st') {
+      final file = await _ST;
+      final contents = await file.readAsString();
+      return contents;
+    } else if (place == 'rv') {
+      final file = await _RV;
+      final contents = await file.readAsString();
+      return contents;
+    } else if (place == 'pr') {
+      final file = await _PR;
+      final contents = await file.readAsString();
+      return contents;
+    } else {
+      final file = await _NO;
+      final contents = await file.readAsString();
+      return contents;
+    }
+  }
+
+  Future<File> ecriredata(String data, String place) async {
+    if (place == 'ah') {
+      final file = await _AH;
+      return file.writeAsString(data);
+    } else if (place == 'at') {
+      final file = await _AT;
+      return file.writeAsString(data);
+    } else if (place == 'sh') {
+      final file = await _SH;
+      return file.writeAsString(data);
+    } else if (place == 'st') {
+      final file = await _ST;
+      return file.writeAsString(data);
+    } else if (place == 'rv') {
+      final file = await _RV;
+      return file.writeAsString(data);
+    } else if (place == 'pr') {
+      final file = await _PR;
+      return file.writeAsString(data);
+    } else {
+      final file = await _NO;
+      return file.writeAsString(data);
+    }
+  }
+
 }
+
 //AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
 Future<Album> fetchAlbum() async {
@@ -187,11 +276,45 @@ Future<Album> fetchAlbum() async {
   if (response.statusCode == 200) {
     // If the server did return a 200 OK response,
     // then parse the JSON.
-    return Album.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
+    final album = Album.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
+    
+    // Write the fetched data to text files for caching
+    final storage = Stockage();
+    await storage.ecriredata(album.airHum, 'ah');
+    await storage.ecriredata(album.airTemp, 'at');
+    await storage.ecriredata(album.solHum, 'sh');
+    await storage.ecriredata(album.solTemp, 'st');
+    await storage.ecriredata(album.reservoirVol, 'rv');
+    
+    return album;
   } else {
     // If the server did not return a 200 OK response,
     // then throw an exception.
     throw Exception('Failed to load album');
+  }
+}
+
+/// Reads sensor data from cached text files instead of fetching from ThingSpeak
+Future<Album> fetchAlbumFromCache() async {
+  try {
+    final storage = Stockage();
+    
+    // Read all sensor values from text files
+    final airHum = await storage.liredata('data', 'ah');
+    final airTemp = await storage.liredata('data', 'at');
+    final solHum = await storage.liredata('data', 'sh');
+    final solTemp = await storage.liredata('data', 'st');
+    final reservoirVol = await storage.liredata('data', 'rv');
+    
+    return Album(
+      airHum: airHum.trim().isEmpty ? '0' : airHum.trim(),
+      airTemp: airTemp.trim().isEmpty ? '0' : airTemp.trim(),
+      solHum: solHum.trim().isEmpty ? '0' : solHum.trim(),
+      solTemp: solTemp.trim().isEmpty ? '0' : solTemp.trim(),
+      reservoirVol: reservoirVol.trim().isEmpty ? '0' : reservoirVol.trim(),
+    );
+  } catch (e) {
+    throw Exception('Failed to load cached album: $e');
   }
 }
 
@@ -442,6 +565,24 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
+  /// Refresh function that fetches fresh data from ThingSpeak and caches it
+  Future<void> _onRefresh() async {
+    try {
+      await fetchAlbum();
+      // Force rebuild of the widget to display updated cached data
+      if (mounted) {
+        setState(() {});
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erreur lors de la mise à jour: $e'),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done
@@ -470,9 +611,11 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Center(
         // Center is a layout widget. It takes a single child and positions it
         // in the middle of the parent.
-        child: SingleChildScrollView(
-          physics: BouncingScrollPhysics(),
-          child: Column(
+        child: RefreshIndicator(
+          onRefresh: _onRefresh,
+          child: SingleChildScrollView(
+            physics: BouncingScrollPhysics(),
+            child: Column(
             // Column is also a layout widget. It takes a list of children and
             // arranges them vertically. By default, it sizes itself to fit its
             // children horizontally, and tries to be as tall as its parent.
@@ -589,7 +732,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       borderRadius: BorderRadius.circular(radiRound),
                     ),
                     child: FutureBuilder<Album>(
-                      future: fetchAlbum(),
+                      future: fetchAlbumFromCache(),
                       builder: (context, snapshot) {
                         if (snapshot.hasData) {
                           return Center(
@@ -630,7 +773,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       borderRadius: BorderRadius.circular(radiSquare),
                     ),
                     child: FutureBuilder<Album>(
-                      future: fetchAlbum(),
+                      future: fetchAlbumFromCache(),
                       builder: (context, snapshot) {
                         if (snapshot.hasData) {
                           return Center(
@@ -666,7 +809,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       borderRadius: BorderRadius.circular(radiSquare),
                     ),
                     child: FutureBuilder<Album>(
-                      future: fetchAlbum(),
+                      future: fetchAlbumFromCache(),
                       builder: (context, snapshot) {
                         if (snapshot.hasData) {
                           return Center(
@@ -707,7 +850,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       borderRadius: BorderRadius.circular(radiSquare),
                     ),
                     child: FutureBuilder<Album>(
-                      future: fetchAlbum(),
+                      future: fetchAlbumFromCache(),
                       builder: (context, snapshot) {
                         if (snapshot.hasData) {
                           return Center(
@@ -749,7 +892,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       borderRadius: BorderRadius.circular(radiSquare),
                     ),
                     child: FutureBuilder<Album>(
-                      future: fetchAlbum(),
+                      future: fetchAlbumFromCache(),
                       builder: (context, snapshot) {
                         if (snapshot.hasData) {
                           return Center(
@@ -849,6 +992,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ],
           ),
+        ),
         ),
       ),
     );
