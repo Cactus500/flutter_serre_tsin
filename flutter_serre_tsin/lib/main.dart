@@ -206,34 +206,39 @@ class Stockage {
   }
 
   Future<String> liredata(String data, String place) async {
-    if (place == 'ah') {
-      final file = await _AH;
-      final contents = await file.readAsString();
-      return contents;
-    } else if (place == 'at') {
-      final file = await _AT;
-      final contents = await file.readAsString();
-      return contents;
-    } else if (place == 'sh') {
-      final file = await _SH;
-      final contents = await file.readAsString();
-      return contents;
-    } else if (place == 'st') {
-      final file = await _ST;
-      final contents = await file.readAsString();
-      return contents;
-    } else if (place == 'rv') {
-      final file = await _RV;
-      final contents = await file.readAsString();
-      return contents;
-    } else if (place == 'pr') {
-      final file = await _PR;
-      final contents = await file.readAsString();
-      return contents;
-    } else {
-      final file = await _NO;
-      final contents = await file.readAsString();
-      return contents;
+    try {
+      if (place == 'ah') {
+        final file = await _AH;
+        final contents = await file.readAsString();
+        return contents;
+      } else if (place == 'at') {
+        final file = await _AT;
+        final contents = await file.readAsString();
+        return contents;
+      } else if (place == 'sh') {
+        final file = await _SH;
+        final contents = await file.readAsString();
+        return contents;
+      } else if (place == 'st') {
+        final file = await _ST;
+        final contents = await file.readAsString();
+        return contents;
+      } else if (place == 'rv') {
+        final file = await _RV;
+        final contents = await file.readAsString();
+        return contents;
+      } else if (place == 'pr') {
+        final file = await _PR;
+        final contents = await file.readAsString();
+        return contents;
+      } else {
+        final file = await _NO;
+        final contents = await file.readAsString();
+        return contents;
+      }
+    } catch (e) {
+      // File doesn't exist yet, return default value
+      return '0';
     }
   }
 
