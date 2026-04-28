@@ -195,22 +195,38 @@ Future<Album> fetchAlbum() async {
   }
 }
 
+Future<void> _sendToThingSpeak(
+  String apiKey,
+  Album data,
+  String field6Value,
+  String field7Value,
+) async {
+  await http.post(
+    Uri.parse(
+      'https://api.thingspeak.com/update?api_key=$apiKey'
+      '&field1=${data.airHum}'
+      '&field2=${data.airTemp}'
+      '&field3=${data.solHum}'
+      '&field4=${data.solTemp}'
+      '&field5=${data.reservoirVol}'
+      '&field6=$field6Value'
+      '&field7=$field7Value',
+    ),
+  );
+}
+
 Future<void> nomPlante(String nomplante) async {
   final pom = await Stockage().lireclef('ecriture');
   if (pom.isEmpty) return;
   
   final latest = await fetchAlbum();
-  await http.post(
-    Uri.parse(
-      'https://api.thingspeak.com/update?api_key=$pom'
-      '&field1=${latest.airHum}'
-      '&field2=${latest.airTemp}'
-      '&field3=${latest.solHum}'
-      '&field4=${latest.solTemp}'
-      '&field5=${latest.reservoirVol}'
-      '&field6=${await prefplante(nomplante).then((prefs) => prefs ?? 'non trouvé')}'
-      '&field7=$nomplante',
-    ),
+  final prefs = await prefplante(nomplante);
+  
+  await _sendToThingSpeak(
+    pom,
+    latest,
+    prefs ?? 'non trouvé',
+    nomplante,
   );
 }
 
@@ -234,17 +250,11 @@ Future<String?> prefplante(String nomdonne) async {
     final prefs = cols[1].trim();
 
     if (nom == query) {
-      await http.post(
-        Uri.parse(
-          'https://api.thingspeak.com/update?api_key=$pom'
-          '&field1=${latest.airHum}'
-          '&field2=${latest.airTemp}'
-          '&field3=${latest.solHum}'
-          '&field4=${latest.solTemp}'
-          '&field5=${latest.reservoirVol}'
-          '&field6=$prefs'
-          '&field7=$nom',
-        ),
+      await _sendToThingSpeak(
+        pom,
+        latest,
+        prefs,
+        nom,
       );
       return prefs;
     }
