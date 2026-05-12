@@ -150,6 +150,14 @@ class Stockage {
     final path = await _localPath;
     return File('$path/no.txt');
   }
+  Future<File> get _NP async {
+    final path = await _localPath;
+    return File('$path/np.txt');
+  }
+  Future<File> get _PP async {
+    final path = await _localPath;
+    return File('$path/pp.txt');
+  }
 
 
   /// Lit la clé API depuis le fichier local et renvoie une `Future<String>`.
@@ -231,6 +239,14 @@ class Stockage {
         final file = await _PR;
         final contents = await file.readAsString();
         return contents;
+      } else if (place == 'np') {
+        final file = await _NP;
+        final contents = await file.readAsString();
+        return contents;
+      } else if (place == 'pp') {
+        final file = await _PP;
+        final contents = await file.readAsString();
+        return contents;
       } else {
         final file = await _NO;
         final contents = await file.readAsString();
@@ -260,6 +276,12 @@ class Stockage {
       return file.writeAsString(data);
     } else if (place == 'pr') {
       final file = await _PR;
+      return file.writeAsString(data);
+    } else if (place == 'np') {
+      final file = await _NP;
+      return file.writeAsString(data);
+    } else if (place == 'pp') {
+      final file = await _PP;
       return file.writeAsString(data);
     } else {
       final file = await _NO;
@@ -548,6 +570,16 @@ class _MyHomePageState extends State<MyHomePage> {
     widget.storage.lireclef('ecriture').then((value) {
       setState(() {
         _pommedereinette = value;
+      });
+    });
+    widget.storage.liredata('data', 'np').then((value) {
+      setState(() {
+        _selectedPlantName = value.trim();
+      });
+    });
+    widget.storage.liredata('data', 'pp').then((value) {
+      setState(() {
+        _selectedPlantPref = value.trim();
       });
     });
   }
@@ -959,6 +991,9 @@ class _MyHomePageState extends State<MyHomePage> {
                                     'non trouvé';
 
                                 if (!mounted) return;
+
+                                await widget.storage.ecriredata(correctedName, 'np');
+                                await widget.storage.ecriredata(prefs, 'pp');
 
                                 setState(() {
                                   _selectedPlantName = correctedName;
