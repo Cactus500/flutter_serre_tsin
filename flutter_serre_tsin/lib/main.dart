@@ -274,7 +274,7 @@ class Stockage {
 Future<Album> fetchAlbum() async {
   final response = await http.get(
     Uri.parse(
-      'https://api.thingspeak.com/channels/3260066/fields/7.json?results=2',
+      'https://api.thingspeak.com/channels/3260066/feeds.json?results=2',
     ),
   );
 
